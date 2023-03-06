@@ -1,3 +1,4 @@
+import re
 from tqdm import tqdm
 import argparse
 import time
@@ -61,44 +62,67 @@ class ChatGPT:
 
         return t_text
     
-def translate_text_file(text_filepath):
+def translate_text_file(text_filepath, options):
+
     with open(text_filepath, "r") as f:
         text = f.read()
-        translator = ChatGPT(OPENAI_API_KEY, options.target_lang)
         paragraphs = [p.strip() for p in text.split("\n") if p.strip() != ""]
 
-    with ThreadPoolExecutor(max_workers=options.num_threads) as executor:
-        translated_paragraphs = list(
-            tqdm(executor.map(translator.translate, paragraphs),
-                total=len(paragraphs),
-                desc="Translating paragraphs",
-                unit="paragraph"))
-        translated_paragraphs = [p.strip() for p in translated_paragraphs]
-
-    translated_text = "\n".join(translated_paragraphs)
-
     if options.bilingual:
+        with ThreadPoolExecutor(max_workers=options.num_threads) as executor:
+            translated_paragraphs = list(
+                tqdm(executor.map(translator.translate, paragraphs),
+                    total=len(paragraphs),
+                    desc="Translating paragraphs",
+                    unit="paragraph"))
+            translated_paragraphs = [p.strip() for p in translated_paragraphs]
+
+        translated_text = "\n".join(translated_paragraphs)
         bilingual_text = "\n".join(f"{paragraph}\n{translation}"
                                    for paragraph, translation in zip(
                                        paragraphs, translated_paragraphs))
-        output_file = f"{Path(options.input_file).parent}/{Path(options.input_file).stem}_bilingual.txt"
+        output_file = f"{Path(options.input_path).parent}/{Path(options.input_path).stem}_bilingual.txt"
         with open(output_file, "w") as f:
             f.write(bilingual_text)
             print(f"Bilingual text saved to {f.name}.")
     else:
-        output_file = f"{Path(options.input_file).parent}/{Path(options.input_file).stem}_translated.txt"
+        if len(paragraphs) % 2 == 1:
+            # Add a placeholder string to make the number of paragraphs even
+            paragraphs.append("")
+
+        # for every two paragraphs, join them together 
+        # and translate them as a single paragraph pair
+        pairs = [f"{paragraphs[i]}\n{paragraphs[i+1]}"
+                for i in range(0, len(paragraphs), 2)]
+
+        with ThreadPoolExecutor(max_workers=options.num_threads) as executor:
+            translator = ChatGPT(OPENAI_API_KEY, options.target_lang)
+            # Translate each pair of paragraphs
+            translated_pairs = list(
+                tqdm(executor.map(translator.translate, pairs),
+                    total=len(pairs),
+                    desc="Translating paragraph pairs",
+                    unit="paragraph pair"))
+            translated_paragraphs = [p.strip() for p in translated_pairs]
+
+        translated_text = "\n".join(translated_paragraphs).strip()
+        # remove extra newlines
+        translated_text = re.sub(r"\n{2,}", "\n", translated_text)
+        output_file = f"{Path(options.input_path).parent}/{Path(options.input_path).stem}_translated.txt"
         with open(output_file, "w") as f:
             f.write(translated_text)
             print(f"Translated text saved to {f.name}.")
 
 
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--input_file",
-        dest="input_file",
+        "--input_path",
+        dest="input_path",
         type=str,
-        help="input file to translate",
+        help="input file or folder to translate",
     )
     parser.add_argument(
         "--openai_key",
@@ -135,7 +159,21 @@ if __name__ == "__main__":
     OPENAI_API_KEY = options.openai_key or env.get("OPENAI_API_KEY")
     if not OPENAI_API_KEY:
         raise Exception("Please provide your OpenAI API key")
-    if not options.input_file.endswith(".txt"):
-        raise Exception("please use a txt file")
-    text_filepath = Path(options.input_file)
-    translate_text_file(text_filepath)
+        
+    input_path = Path(options.input_path)
+    if not input_path.exists():
+        raise Exception("Input path does not exist")
+    
+    if input_path.is_dir():
+        # input path is a folder, scan and process all allowed file types
+        allowed_extensions = [".txt", ".md"]
+        for file_path in input_path.rglob("*"):
+            if file_path.is_file() and file_path.suffix.lower() in allowed_extensions:
+                translate_text_file(str(file_path), options)
+    elif input_path.is_file():
+        # input path is a file
+        if not input_path.suffix.lower() == ".txt":
+            raise Exception("Please use a txt file")
+        translate_text_file(str(input_path), options)
+    else:
+        raise Exception("Input path is not a file or folder")
