@@ -6,7 +6,9 @@ This is a simple tool that uses ChatGPT to translate text into a specified targe
 
 Use this tool on Google Colab (recommended): https://colab.research.google.com/drive/1_715zHeS3VaZaB9ISyo29Zp-KOTsyP8D?usp=sharing
 
-## Example | 例子
+在 Google Colab 上使用此工具（推荐）：https://colab.research.google.com/drive/1_715zHeS3VaZaB9ISyo29Zp-KOTsyP8D?usp=sharing
+
+## Simple Example | 简单例子
 
 ```
 git clone https://github.com/Raychanan/ChatGPT-for-Translation.git
@@ -19,9 +21,10 @@ This command will translate the text in input.txt into Simplified Chinese using 
 
 这个命令将使用ChatGPT把`input.txt`中的文本翻译成简体中文。你也可以指定任何你想要的语言。例如，`--target_lang="Japanese"`。
 
+## Bilingual Translation Example | 双语翻译例子
 
 
-`python ChatGPT-translate.py --input_file input.txt --openai_key=your_key --bilingual --num_threads 20 --target_lang="Simplified Chinese"`
+`python ChatGPT-translate.py --input_file input.txt --openai_key=your_key --bilingual --num_threads 20 --target_lang="Chinese"`
 
 This command will translate the text in input.txt into Simplified Chinese using ChatGPT, using 20 threads (10 by default) for translation. The output will be a bilingual text file with the original and translated text side by side.
 
