@@ -60,6 +60,36 @@ class ChatGPT:
                 continue
 
         return t_text
+    
+def translate_text_file(text_filepath):
+    with open(text_filepath, "r") as f:
+        text = f.read()
+        translator = ChatGPT(OPENAI_API_KEY, options.target_lang)
+        paragraphs = [p.strip() for p in text.split("\n") if p.strip() != ""]
+
+    with ThreadPoolExecutor(max_workers=options.num_threads) as executor:
+        translated_paragraphs = list(
+            tqdm(executor.map(translator.translate, paragraphs),
+                total=len(paragraphs),
+                desc="Translating paragraphs",
+                unit="paragraph"))
+        translated_paragraphs = [p.strip() for p in translated_paragraphs]
+
+    translated_text = "\n".join(translated_paragraphs)
+
+    if options.bilingual:
+        bilingual_text = "\n".join(f"{paragraph}\n{translation}"
+                                   for paragraph, translation in zip(
+                                       paragraphs, translated_paragraphs))
+        output_file = f"{Path(options.input_file).parent}/{Path(options.input_file).stem}_bilingual.txt"
+        with open(output_file, "w") as f:
+            f.write(bilingual_text)
+            print(f"Bilingual text saved to {f.name}.")
+    else:
+        output_file = f"{Path(options.input_file).parent}/{Path(options.input_file).stem}_translated.txt"
+        with open(output_file, "w") as f:
+            f.write(translated_text)
+            print(f"Translated text saved to {f.name}.")
 
 
 if __name__ == "__main__":
@@ -107,31 +137,5 @@ if __name__ == "__main__":
         raise Exception("Please provide your OpenAI API key")
     if not options.input_file.endswith(".txt"):
         raise Exception("please use a txt file")
-    with open(options.input_file, "r") as f:
-        text = f.read()
-        translator = ChatGPT(OPENAI_API_KEY, options.target_lang)
-        paragraphs = [p.strip() for p in text.split("\n") if p.strip() != ""]
-
-    with ThreadPoolExecutor(max_workers=options.num_threads) as executor:
-        translated_paragraphs = list(
-            tqdm(executor.map(translator.translate, paragraphs),
-                total=len(paragraphs),
-                desc="Translating paragraphs",
-                unit="paragraph"))
-        translated_paragraphs = [p.strip() for p in translated_paragraphs]
-
-    translated_text = "\n".join(translated_paragraphs)
-
-    if options.bilingual:
-        bilingual_text = "\n".join(f"{paragraph}\n{translation}"
-                                   for paragraph, translation in zip(
-                                       paragraphs, translated_paragraphs))
-        output_file = f"{Path(options.input_file).parent}/{Path(options.input_file).stem}_bilingual.txt"
-        with open(output_file, "w") as f:
-            f.write(bilingual_text)
-            print(f"Bilingual text saved to {f.name}.")
-    else:
-        output_file = f"{Path(options.input_file).parent}/{Path(options.input_file).stem}_translated.txt"
-        with open(output_file, "w") as f:
-            f.write(translated_text)
-            print(f"Translated text saved to {f.name}.")
+    text_filepath = Path(options.input_file)
+    translate_text_file(text_filepath)
