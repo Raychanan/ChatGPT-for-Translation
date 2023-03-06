@@ -1,11 +1,16 @@
 # ChatGPT for Translation
 This is a simple tool that uses ChatGPT to translate text into a specified target language. The program takes a text file (`.txt` or `.md`)as input, and outputs a **translated** text file or a **bilingual** text file with the original and translated text side by side.
 
-
+Use this tool on Google Colab (recommended): https://colab.research.google.com/drive/1_715zHeS3VaZaB9ISyo29Zp-KOTsyP8D?usp=sharing
 
 ## Example
 
-`python ChatGPT-translate.py --input_file input.txt --openai_key=your_key --target_lang="Simplified Chinese"`
+```
+git clone https://github.com/Raychanan/ChatGPT-for-Translation.git
+cd ./ChatGPT-for-Translation/
+pip install -r requirements.txt --quiet
+python ChatGPT-translate.py --input_file input.txt --openai_key=your_key --target_lang="Simplified Chinese"`
+```
 
 This command will translate the text in input.txt into Simplified Chinese using ChatGPT. You can also specify any language you want. For example, `--target_lang="Japanese"`.
 
