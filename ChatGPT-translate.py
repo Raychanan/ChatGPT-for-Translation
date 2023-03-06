@@ -81,7 +81,7 @@ def translate_text_file(text_filepath, options):
         bilingual_text = "\n".join(f"{paragraph}\n{translation}"
                                    for paragraph, translation in zip(
                                        paragraphs, translated_paragraphs))
-        output_file = f"{Path(options.input_path).parent}/{Path(options.input_path).stem}_bilingual.txt"
+        output_file = f"{Path(text_filepath).parent}/{Path(text_filepath).stem}_bilingual.txt"
         with open(output_file, "w") as f:
             f.write(bilingual_text)
             print(f"Bilingual text saved to {f.name}.")
@@ -108,7 +108,7 @@ def translate_text_file(text_filepath, options):
         translated_text = "\n".join(translated_paragraphs).strip()
         # remove extra newlines
         translated_text = re.sub(r"\n{2,}", "\n", translated_text)
-        output_file = f"{Path(options.input_path).parent}/{Path(options.input_path).stem}_translated.txt"
+        output_file = f"{Path(text_filepath).parent}/{Path(text_filepath).stem}_translated.txt"
         with open(output_file, "w") as f:
             f.write(translated_text)
             print(f"Translated text saved to {f.name}.")
@@ -136,7 +136,7 @@ if __name__ == "__main__":
         "--num_threads",
         dest="num_threads",
         type=int,
-        default=10,
+        default=5,
         help="number of threads to use for translation",
     )
     parser.add_argument(
@@ -166,9 +166,26 @@ if __name__ == "__main__":
     
     if input_path.is_dir():
         # input path is a folder, scan and process all allowed file types
-        allowed_extensions = [".txt", ".md"]
         for file_path in input_path.rglob("*"):
-            if file_path.is_file() and file_path.suffix.lower() in allowed_extensions:
+            if file_path.is_file() and file_path.suffix.lower() in ALLOWED_FILE_TYPES:
+                # if file ends with _translated.txt or _bilingual.txt, skip it
+                if file_path.stem.endswith("_translated") and not options.bilingual:
+                    print(f"You already have a translated file for {file_path}, skipping...")
+                    continue
+                elif file_path.stem.endswith("_bilingual") and options.bilingual:
+                    print(f"You already have a bilingual file for {file_path}, skipping...")
+                    continue
+
+                print(f"Translating {file_path}...")
+                # if there is any txt file ending with _translated.txt or _bilingual.txt, skip it
+                if file_path.with_name(f"{file_path.stem}_translated{file_path.suffix}").exists() and not options.bilingual:
+                    print(f"You already have a translated file for {file_path}, skipping...")
+                    continue
+                # elif file_path.stem.endswith("_bilingual") and options.bilingual:
+                elif file_path.with_name(f"{file_path.stem}_bilingual{file_path.suffix}").exists() and options.bilingual:
+                    print(f"You already have a bilingual file for {file_path}, skipping...")
+                    continue
+
                 translate_text_file(str(file_path), options)
     elif input_path.is_file():
         # input path is a file
