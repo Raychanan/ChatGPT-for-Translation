@@ -50,7 +50,6 @@ You need a OpenAI API key (https://beta.openai.com/signup/)
 ```
 --input_path= Path to the input text file to be translated (required).
 --openai_key: Your OpenAI API key (required).
---no_limit: Set this flag to disable the limit on the number of threads used for translation.
 --num_threads: The number of threads to use for translation (default: 10).
 --bilingual: Set this flag to output a bilingual text file with the original and translated text side by side.
 --target_lang: The target language to translate to (default: Simplified Chinese).
