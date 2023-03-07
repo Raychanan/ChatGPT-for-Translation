@@ -1,3 +1,4 @@
+import os
 import re
 from tqdm import tqdm
 import argparse
@@ -8,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
 import openai
 
 
-ALLOWED_FILE_TYPES = [".txt", ".md", ]
+ALLOWED_FILE_TYPES = [".txt", ".md", ".rtf"]
 
 class ChatGPT:
 
@@ -116,7 +117,8 @@ def translate_text_file(text_filepath, options):
 
 
 
-if __name__ == "__main__":
+def parse_arguments():
+    """Parse command-line arguments"""
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--input_path",
@@ -131,7 +133,6 @@ if __name__ == "__main__":
         default="",
         help="OpenAI API key",
     )
-
     parser.add_argument(
         "--num_threads",
         dest="num_threads",
@@ -144,8 +145,7 @@ if __name__ == "__main__":
         dest="bilingual",
         action="store_true",
         default=False,
-        help=
-        "output bilingual txt file with original and translated text side by side",
+        help="output bilingual txt file with original and translated text side by side",
     )
     parser.add_argument(
         "--target_lang",
@@ -154,43 +154,54 @@ if __name__ == "__main__":
         default="Simplified Chinese",
         help="target language to translate to",
     )
-
     options = parser.parse_args()
-    OPENAI_API_KEY = options.openai_key or env.get("OPENAI_API_KEY")
+    OPENAI_API_KEY = options.openai_key or os.environ.get("OPENAI_API_KEY")
     if not OPENAI_API_KEY:
         raise Exception("Please provide your OpenAI API key")
-        
+    return options
+
+
+def process_file(file_path, options):
+    """Translate a single text file"""
+    if not file_path.suffix.lower() in ALLOWED_FILE_TYPES:
+        raise Exception("Please use a txt file")
+    # if file ends with _translated.txt or _bilingual.txt, skip it
+    if file_path.stem.endswith("_translated") and not options.bilingual:
+        print(f"You already have a translated file for {file_path}, skipping...")
+        return
+    elif file_path.stem.endswith("_bilingual") and options.bilingual:
+        print(f"You already have a bilingual file for {file_path}, skipping...")
+        return
+    print(f"Translating {file_path}...")
+    # if there is any txt file ending with _translated.txt or _bilingual.txt, skip it
+    if (file_path.with_name(f"{file_path.stem}_translated{file_path.suffix}").exists()
+            and not options.bilingual):
+        print(f"You already have a translated file for {file_path}, skipping...")
+        return
+    elif (file_path.with_name(f"{file_path.stem}_bilingual{file_path.suffix}").exists()
+            and options.bilingual):
+        print(f"You already have a bilingual file for {file_path}, skipping...")
+        return
+    translate_text_file(str(file_path), options)
+
+
+def process_folder(folder_path, options):
+    """Translate all text files in a folder"""
+    for file_path in folder_path.rglob("*"):
+        if file_path.is_file() and file_path.suffix.lower() in ALLOWED_FILE_TYPES:
+            process_file(file_path, options)
+
+
+def main():
+    """Main function"""
+    options = parse_arguments()
     input_path = Path(options.input_path)
     if not input_path.exists():
         raise Exception("Input path does not exist")
-    
     if input_path.is_dir():
         # input path is a folder, scan and process all allowed file types
-        for file_path in input_path.rglob("*"):
-            if file_path.is_file() and file_path.suffix.lower() in ALLOWED_FILE_TYPES:
-                # if file ends with _translated.txt or _bilingual.txt, skip it
-                if file_path.stem.endswith("_translated") and not options.bilingual:
-                    print(f"You already have a translated file for {file_path}, skipping...")
-                    continue
-                elif file_path.stem.endswith("_bilingual") and options.bilingual:
-                    print(f"You already have a bilingual file for {file_path}, skipping...")
-                    continue
+        process_folder(input_path, options)
 
-                print(f"Translating {file_path}...")
-                # if there is any txt file ending with _translated.txt or _bilingual.txt, skip it
-                if file_path.with_name(f"{file_path.stem}_translated{file_path.suffix}").exists() and not options.bilingual:
-                    print(f"You already have a translated file for {file_path}, skipping...")
-                    continue
-                # elif file_path.stem.endswith("_bilingual") and options.bilingual:
-                elif file_path.with_name(f"{file_path.stem}_bilingual{file_path.suffix}").exists() and options.bilingual:
-                    print(f"You already have a bilingual file for {file_path}, skipping...")
-                    continue
 
-                translate_text_file(str(file_path), options)
-    elif input_path.is_file():
-        # input path is a file
-        if not input_path.suffix.lower() == ".txt":
-            raise Exception("Please use a txt file")
-        translate_text_file(str(input_path), options)
-    else:
-        raise Exception("Input path is not a file or folder")
+if __name__ == "__main__":
+    main()
