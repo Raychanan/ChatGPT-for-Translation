@@ -42,7 +42,7 @@ class ChatGPT:
                         "role":
                         "user",
                         "content":
-                        f"Translate the following text into {self.target_lang} in a way that is faithful to the original text (but do not translate people's names). Return only translations and nothing else:\n {text}",
+                        f"Translate the following text into {self.target_lang} in a way that is faithful to the original text. Do not translate people and authors' names. Return only the translation and nothing else:\n {text}",
                     }],
                 )
                 t_text = (completion["choices"][0].get("message").get(
