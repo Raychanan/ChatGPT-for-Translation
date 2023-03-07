@@ -64,6 +64,7 @@ class ChatGPT:
         return t_text
     
 def translate_text_file(text_filepath, options):
+    OPENAI_API_KEY = options.openai_key or os.environ.get("OPENAI_API_KEY")
 
     with open(text_filepath, "r") as f:
         text = f.read()
@@ -71,6 +72,7 @@ def translate_text_file(text_filepath, options):
 
     if options.bilingual:
         with ThreadPoolExecutor(max_workers=options.num_threads) as executor:
+            translator = ChatGPT(OPENAI_API_KEY, options.target_lang)
             translated_paragraphs = list(
                 tqdm(executor.map(translator.translate, paragraphs),
                     total=len(paragraphs),
@@ -166,10 +168,10 @@ def process_file(file_path, options):
     if not file_path.suffix.lower() in ALLOWED_FILE_TYPES:
         raise Exception("Please use a txt file")
     # if file ends with _translated.txt or _bilingual.txt, skip it
-    if file_path.stem.endswith("_translated") and not options.bilingual:
+    if file_path.stem.endswith("_translated"):
         print(f"You already have a translated file for {file_path}, skipping...")
         return
-    elif file_path.stem.endswith("_bilingual") and options.bilingual:
+    elif file_path.stem.endswith("_bilingual"):
         print(f"You already have a bilingual file for {file_path}, skipping...")
         return
     print(f"Translating {file_path}...")
