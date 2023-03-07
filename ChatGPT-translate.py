@@ -1,3 +1,5 @@
+import os
+import re
 from tqdm import tqdm
 import argparse
 import time
@@ -7,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
 import openai
 
 
-ALLOWED_FILE_TYPES = [".txt", ".md", ]
+ALLOWED_FILE_TYPES = [".txt", ".md", ".rtf"]
 
 class ChatGPT:
 
@@ -41,7 +43,7 @@ class ChatGPT:
                         "role":
                         "user",
                         "content":
-                        f"Translate the following text into {self.target_lang} in a way that is faithful to the original text (but do not translate people's names). Return only translations and nothing else:\n {text}",
+                        f"Translate the following text into {self.target_lang} in a way that is faithful to the original text. Do not translate people and authors' names. Return only the translation and nothing else:\n {text}",
                     }],
                 )
                 t_text = (completion["choices"][0].get("message").get(
@@ -61,44 +63,70 @@ class ChatGPT:
 
         return t_text
     
-def translate_text_file(text_filepath):
+def translate_text_file(text_filepath, options):
+    OPENAI_API_KEY = options.openai_key or os.environ.get("OPENAI_API_KEY")
+
     with open(text_filepath, "r") as f:
         text = f.read()
-        translator = ChatGPT(OPENAI_API_KEY, options.target_lang)
         paragraphs = [p.strip() for p in text.split("\n") if p.strip() != ""]
 
-    with ThreadPoolExecutor(max_workers=options.num_threads) as executor:
-        translated_paragraphs = list(
-            tqdm(executor.map(translator.translate, paragraphs),
-                total=len(paragraphs),
-                desc="Translating paragraphs",
-                unit="paragraph"))
-        translated_paragraphs = [p.strip() for p in translated_paragraphs]
-
-    translated_text = "\n".join(translated_paragraphs)
-
     if options.bilingual:
+        with ThreadPoolExecutor(max_workers=options.num_threads) as executor:
+            translator = ChatGPT(OPENAI_API_KEY, options.target_lang)
+            translated_paragraphs = list(
+                tqdm(executor.map(translator.translate, paragraphs),
+                    total=len(paragraphs),
+                    desc="Translating paragraphs",
+                    unit="paragraph"))
+            translated_paragraphs = [p.strip() for p in translated_paragraphs]
+
+        translated_text = "\n".join(translated_paragraphs)
         bilingual_text = "\n".join(f"{paragraph}\n{translation}"
                                    for paragraph, translation in zip(
                                        paragraphs, translated_paragraphs))
-        output_file = f"{Path(options.input_file).parent}/{Path(options.input_file).stem}_bilingual.txt"
+        output_file = f"{Path(text_filepath).parent}/{Path(text_filepath).stem}_bilingual.txt"
         with open(output_file, "w") as f:
             f.write(bilingual_text)
             print(f"Bilingual text saved to {f.name}.")
     else:
-        output_file = f"{Path(options.input_file).parent}/{Path(options.input_file).stem}_translated.txt"
+        if len(paragraphs) % 2 == 1:
+            # Add a placeholder string to make the number of paragraphs even
+            paragraphs.append("")
+
+        # for every two paragraphs, join them together 
+        # and translate them as a single paragraph pair
+        pairs = [f"{paragraphs[i]}\n{paragraphs[i+1]}"
+                for i in range(0, len(paragraphs), 2)]
+
+        with ThreadPoolExecutor(max_workers=options.num_threads) as executor:
+            translator = ChatGPT(OPENAI_API_KEY, options.target_lang)
+            # Translate each pair of paragraphs
+            translated_pairs = list(
+                tqdm(executor.map(translator.translate, pairs),
+                    total=len(pairs),
+                    desc="Translating paragraph pairs",
+                    unit="paragraph pair"))
+            translated_paragraphs = [p.strip() for p in translated_pairs]
+
+        translated_text = "\n".join(translated_paragraphs).strip()
+        # remove extra newlines
+        translated_text = re.sub(r"\n{2,}", "\n", translated_text)
+        output_file = f"{Path(text_filepath).parent}/{Path(text_filepath).stem}_translated.txt"
         with open(output_file, "w") as f:
             f.write(translated_text)
             print(f"Translated text saved to {f.name}.")
 
 
-if __name__ == "__main__":
+
+
+def parse_arguments():
+    """Parse command-line arguments"""
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--input_file",
-        dest="input_file",
+        "--input_path",
+        dest="input_path",
         type=str,
-        help="input file to translate",
+        help="input file or folder to translate",
     )
     parser.add_argument(
         "--openai_key",
@@ -107,12 +135,11 @@ if __name__ == "__main__":
         default="",
         help="OpenAI API key",
     )
-
     parser.add_argument(
         "--num_threads",
         dest="num_threads",
         type=int,
-        default=10,
+        default=5,
         help="number of threads to use for translation",
     )
     parser.add_argument(
@@ -120,8 +147,7 @@ if __name__ == "__main__":
         dest="bilingual",
         action="store_true",
         default=False,
-        help=
-        "output bilingual txt file with original and translated text side by side",
+        help="output bilingual txt file with original and translated text side by side",
     )
     parser.add_argument(
         "--target_lang",
@@ -130,12 +156,54 @@ if __name__ == "__main__":
         default="Simplified Chinese",
         help="target language to translate to",
     )
-
     options = parser.parse_args()
-    OPENAI_API_KEY = options.openai_key or env.get("OPENAI_API_KEY")
+    OPENAI_API_KEY = options.openai_key or os.environ.get("OPENAI_API_KEY")
     if not OPENAI_API_KEY:
         raise Exception("Please provide your OpenAI API key")
-    if not options.input_file.endswith(".txt"):
-        raise Exception("please use a txt file")
-    text_filepath = Path(options.input_file)
-    translate_text_file(text_filepath)
+    return options
+
+
+def process_file(file_path, options):
+    """Translate a single text file"""
+    if not file_path.suffix.lower() in ALLOWED_FILE_TYPES:
+        raise Exception("Please use a txt file")
+    # if file ends with _translated.txt or _bilingual.txt, skip it
+    if file_path.stem.endswith("_translated"):
+        print(f"You already have a translated file for {file_path}, skipping...")
+        return
+    elif file_path.stem.endswith("_bilingual"):
+        print(f"You already have a bilingual file for {file_path}, skipping...")
+        return
+    print(f"Translating {file_path}...")
+    # if there is any txt file ending with _translated.txt or _bilingual.txt, skip it
+    if (file_path.with_name(f"{file_path.stem}_translated{file_path.suffix}").exists()
+            and not options.bilingual):
+        print(f"You already have a translated file for {file_path}, skipping...")
+        return
+    elif (file_path.with_name(f"{file_path.stem}_bilingual{file_path.suffix}").exists()
+            and options.bilingual):
+        print(f"You already have a bilingual file for {file_path}, skipping...")
+        return
+    translate_text_file(str(file_path), options)
+
+
+def process_folder(folder_path, options):
+    """Translate all text files in a folder"""
+    for file_path in folder_path.rglob("*"):
+        if file_path.is_file() and file_path.suffix.lower() in ALLOWED_FILE_TYPES:
+            process_file(file_path, options)
+
+
+def main():
+    """Main function"""
+    options = parse_arguments()
+    input_path = Path(options.input_path)
+    if not input_path.exists():
+        raise Exception("Input path does not exist")
+    if input_path.is_dir():
+        # input path is a folder, scan and process all allowed file types
+        process_folder(input_path, options)
+
+
+if __name__ == "__main__":
+    main()
