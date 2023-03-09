@@ -89,14 +89,16 @@ def translate_text_file(text_filepath, options):
             f.write(bilingual_text)
             print(f"Bilingual text saved to {f.name}.")
     else:
-        if len(paragraphs) % 2 == 1:
-            # Add a placeholder string to make the number of paragraphs even
-            paragraphs.append("")
+        # if len(paragraphs) % 2 == 1:
+        #     # Add a placeholder string to make the number of paragraphs even
+        #     paragraphs.append("")
 
-        # for every two paragraphs, join them together 
-        # and translate them as a single paragraph pair
-        pairs = [f"{paragraphs[i]}\n{paragraphs[i+1]}"
-                for i in range(0, len(paragraphs), 2)]
+        # # for every two paragraphs, join them together 
+        # # and translate them as a single paragraph pair
+        # pairs = [f"{paragraphs[i]}\n{paragraphs[i+1]}"
+        #         for i in range(0, len(paragraphs), 2)]
+
+        pairs = paragraphs
 
         with ThreadPoolExecutor(max_workers=options.num_threads) as executor:
             translator = ChatGPT(OPENAI_API_KEY, options.target_lang)
@@ -203,6 +205,8 @@ def main():
     if input_path.is_dir():
         # input path is a folder, scan and process all allowed file types
         process_folder(input_path, options)
+    elif input_path.is_file():
+        process_file(input_path, options)
 
 
 if __name__ == "__main__":
