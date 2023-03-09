@@ -13,12 +13,13 @@ ALLOWED_FILE_TYPES = [".txt", ".md", ".rtf"]
 
 class ChatGPT:
 
-    def __init__(self, key, target_lang):
+    def __init__(self, key, target_language, whether_translate_names):
         self.key = key
-        self.target_lang = target_lang
+        self.target_language = target_language
         self.last_request_time = 0
         self.request_interval = 1  # seconds
         self.max_backoff_time = 60  # seconds
+        self.whether_translate_names = whether_translate_names
 
     def translate(self, text):
         # Set up OpenAI API key
@@ -31,21 +32,37 @@ class ChatGPT:
                 if elapsed_time < self.request_interval:
                     time.sleep(self.request_interval - elapsed_time)
                 self.last_request_time = time.monotonic()
-
-                completion = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
-                    messages=[{
-                        'role':
-                        'system',
-                        'content':
-                        'You are a translator assistant.'
-                    }, {
-                        "role":
-                        "user",
-                        "content":
-                        f"Translate the following text into {self.target_lang} in a way that is faithful to the original text. Do not translate people and authors' names. Return only the translation and nothing else:\n {text}",
-                    }],
-                )
+                # change prompt based on whether_translate_names
+                if self.whether_translate_names:
+                    completion = openai.ChatCompletion.create(
+                        model="gpt-3.5-turbo",
+                        messages=[{
+                            'role':
+                            'system',
+                            'content':
+                            'You are a translator assistant.'
+                        }, {
+                            "role":
+                            "user",
+                            "content":
+                            f"Translate the following text into {self.target_language} in a way that is faithful to the original text. Return only the translation and nothing else:\n{text}",
+                        }],
+                    )
+                else:
+                    completion = openai.ChatCompletion.create(
+                        model="gpt-3.5-turbo",
+                        messages=[{
+                            'role':
+                            'system',
+                            'content':
+                            'You are a translator assistant.'
+                        }, {
+                            "role":
+                            "user",
+                            "content":
+                            f"Translate the following text into {self.target_language} in a way that is faithful to the original text. Do not translate people and authors' names. Return only the translation and nothing else:\n{text}",
+                        }],
+                    )
                 t_text = (completion["choices"][0].get("message").get(
                     "content").encode("utf8").decode())
                 break
@@ -65,6 +82,7 @@ class ChatGPT:
     
 def translate_text_file(text_filepath, options):
     OPENAI_API_KEY = options.openai_key or os.environ.get("OPENAI_API_KEY")
+    translator = ChatGPT(OPENAI_API_KEY, options.target_language, options.whether_translate_names)
 
     with open(text_filepath, "r") as f:
         text = f.read()
@@ -72,7 +90,6 @@ def translate_text_file(text_filepath, options):
 
     if options.bilingual:
         with ThreadPoolExecutor(max_workers=options.num_threads) as executor:
-            translator = ChatGPT(OPENAI_API_KEY, options.target_lang)
             translated_paragraphs = list(
                 tqdm(executor.map(translator.translate, paragraphs),
                     total=len(paragraphs),
@@ -101,7 +118,6 @@ def translate_text_file(text_filepath, options):
         pairs = paragraphs
 
         with ThreadPoolExecutor(max_workers=options.num_threads) as executor:
-            translator = ChatGPT(OPENAI_API_KEY, options.target_lang)
             # Translate each pair of paragraphs
             translated_pairs = list(
                 tqdm(executor.map(translator.translate, pairs),
@@ -117,9 +133,6 @@ def translate_text_file(text_filepath, options):
         with open(output_file, "w") as f:
             f.write(translated_text)
             print(f"Translated text saved to {f.name}.")
-
-
-
 
 def parse_arguments():
     """Parse command-line arguments"""
@@ -152,12 +165,21 @@ def parse_arguments():
         help="output bilingual txt file with original and translated text side by side",
     )
     parser.add_argument(
-        "--target_lang",
-        dest="target_lang",
+        "--target_language",
+        dest="target_language",
         type=str,
         default="Simplified Chinese",
         help="target language to translate to",
     )
+
+    parser.add_argument(
+        "--whether_translate_names",
+        dest="whether_translate_names",
+        action="store_true",
+        default=True,
+        help="whether or not to translate names in the text",
+    )
+
     options = parser.parse_args()
     OPENAI_API_KEY = options.openai_key or os.environ.get("OPENAI_API_KEY")
     if not OPENAI_API_KEY:
@@ -176,7 +198,6 @@ def process_file(file_path, options):
     elif file_path.stem.endswith("_bilingual"):
         print(f"You already have a bilingual file for {file_path}, skipping...")
         return
-    print(f"Translating {file_path}...")
     # if there is any txt file ending with _translated.txt or _bilingual.txt, skip it
     if (file_path.with_name(f"{file_path.stem}_translated{file_path.suffix}").exists()
             and not options.bilingual):
@@ -186,14 +207,18 @@ def process_file(file_path, options):
             and options.bilingual):
         print(f"You already have a bilingual file for {file_path}, skipping...")
         return
+    print(f"Translating {file_path}...")
     translate_text_file(str(file_path), options)
 
 
 def process_folder(folder_path, options):
     """Translate all text files in a folder"""
-    for file_path in folder_path.rglob("*"):
+    files_to_process = list(folder_path.rglob("*"))
+    total_files = len(files_to_process)
+    for index, file_path in enumerate(files_to_process):
         if file_path.is_file() and file_path.suffix.lower() in ALLOWED_FILE_TYPES:
             process_file(file_path, options)
+        print(f"Processed file {index + 1} of {total_files}. Only {total_files - index - 1} files left to process.")
 
 
 def main():
