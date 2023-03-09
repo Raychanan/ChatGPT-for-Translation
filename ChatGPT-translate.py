@@ -7,9 +7,9 @@ from os import environ as env
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
 import openai
+import trafilatura
 
-
-ALLOWED_FILE_TYPES = [".txt", ".md", ".rtf"]
+ALLOWED_FILE_TYPES = [".txt", ".md", ".rtf", ".html"]
 
 class ChatGPT:
 
@@ -86,6 +86,8 @@ def translate_text_file(text_filepath, options):
 
     with open(text_filepath, "r") as f:
         text = f.read()
+        if text_filepath.endswith('.html'):
+            text = trafilatura.extract(text)
         paragraphs = [p.strip() for p in text.split("\n") if p.strip() != ""]
 
     if options.bilingual:
