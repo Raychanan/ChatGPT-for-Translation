@@ -1,7 +1,7 @@
 # ChatGPT for Translation | ChatGPT用于翻译
-This is a simple tool that uses ChatGPT to translate text into a specified target language **in a faithful way to the original**. The tool takes a text file or a folder of text files (`.txt` or `.md`) as input, and outputs a **translated** text file or a **bilingual** text file with the original and translated text side by side. This tool automatically sets multi-threading (to speed up your translation process) and automatically considers the frequency limit set by ChatGPT for users.
+This is a simple tool that uses ChatGPT to translate text into a specified target language **in a faithful way to the original**. The tool takes a text file or a folder of text files (`.txt` or `.md`) as input, and outputs a **translated** text file or a **bilingual** text file with the original and translated text side by side. This tool automatically sets multi-threading (to speed up your translation process) by default, considers the frequency limit set by ChatGPT for users, and can be set to translate personal names or not (default is to translate).
 
-使用ChatGPT将文本以**忠于原文的方式**翻译成指定的目标语言。该工具接受一个文本文件或者一个包含文本的文件夹（`.txt`, `.md`或`.rtf`）作为输入，并生成一个**直接翻译**后的文本文件或一个**双语的**(并列显示原始文本和翻译文本)文本文件。这个工具默认自动设置了多线程(加速你的翻译过程)、自动考虑了ChatGPT给用户设置的频率限制。
+使用ChatGPT将文本以**忠于原文的方式**翻译成指定的目标语言。该工具接受一个文本文件（`.txt`, `.md`或`.rtf`）或者一个包含文本的文件夹，并生成一个**直接翻译**后的文本或一个**双语的**(并列显示原始文本和翻译文本)文本。这个工具默认自动设置了多线程(加速你的翻译过程)、自动考虑了ChatGPT给用户设置的频率限制、可以设置是否翻译人名(默认为翻译)。
 
 Use this tool on Google Colab (recommended): https://colab.research.google.com/drive/1_715zHeS3VaZaB9ISyo29Zp-KOTsyP8D?usp=sharing
 
@@ -48,9 +48,6 @@ You need a OpenAI API key (https://beta.openai.com/signup/)
 
 ## Arguments | 可用参数
 ```
---input_path= Path to the input text file to be translated (required).
---openai_key: Your OpenAI API key (required).
---num_threads: The number of threads to use for translation (default: 10).
---bilingual: Set this flag to output a bilingual text file with the original and translated text side by side.
---target_lang: The target language to translate to (default: Simplified Chinese).
+--num_threads: The number of threads to use for translation (default: 5).
+--whether_translate_names Whether or not to translate names in the text. This can be useful if you are translating academic texts.
 ```
