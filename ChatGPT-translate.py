@@ -14,13 +14,13 @@ ALLOWED_FILE_TYPES = [".txt", ".md", ".rtf", ".html"]
 
 class ChatGPT:
 
-    def __init__(self, key, target_language, translate_people_names):
+    def __init__(self, key, target_language, not_to_translate_people_names):
         self.key = key
         self.target_language = target_language
         self.last_request_time = 0
         self.request_interval = 1  # seconds
         self.max_backoff_time = 60  # seconds
-        self.translate_people_names = translate_people_names
+        self.not_to_translate_people_names = not_to_translate_people_names
 
     def translate(self, text):
         # Set up OpenAI API key
@@ -33,8 +33,8 @@ class ChatGPT:
                 if elapsed_time < self.request_interval:
                     time.sleep(self.request_interval - elapsed_time)
                 self.last_request_time = time.monotonic()
-                # change prompt based on translate_people_names
-                if self.translate_people_names:
+                # change prompt based on not_to_translate_people_names
+                if self.not_to_translate_people_names:
                     completion = openai.ChatCompletion.create(
                         model="gpt-3.5-turbo",
                         messages=[{
@@ -44,7 +44,7 @@ class ChatGPT:
                             "role":
                             "user",
                             "content":
-                            f"Translate the following text into {self.target_language} in a way that is faithful to the original text. Return only the translation and nothing else:\n{text}",
+                            f"Translate the following text into {self.target_language} in a way that is faithful to the original text. Do not translate people and authors' names. Return only the translation and nothing else:\n{text}",
                         }],
                     )
                 else:
@@ -57,7 +57,7 @@ class ChatGPT:
                             "role":
                             "user",
                             "content":
-                            f"Translate the following text into {self.target_language} in a way that is faithful to the original text. Do not translate people and authors' names. Return only the translation and nothing else:\n{text}",
+                            f"Translate the following text into {self.target_language} in a way that is faithful to the original text. Return only the translation and nothing else:\n{text}",
                         }],
                     )
                 t_text = (completion["choices"][0].get("message").get(
@@ -81,7 +81,7 @@ class ChatGPT:
 def translate_text_file(text_filepath_or_url, options):
     OPENAI_API_KEY = options.openai_key or os.environ.get("OPENAI_API_KEY")
     translator = ChatGPT(OPENAI_API_KEY, options.target_language,
-                         options.translate_people_names)
+                         options.not_to_translate_people_names)
 
     paragraphs = read_and_preprocess_data(text_filepath_or_url)
 
@@ -192,7 +192,7 @@ def parse_arguments():
         "--num_threads",
         dest="num_threads",
         type=int,
-        default=5,
+        default=10,
         help="number of threads to use for translation",
     )
     parser.add_argument(
@@ -212,8 +212,8 @@ def parse_arguments():
     )
 
     parser.add_argument(
-        "--translate_people_names",
-        dest="translate_people_names",
+        "--not_to_translate_people_names",
+        dest="not_to_translate_people_names",
         action="store_true",
         default=True,
         help="whether or not to translate names in the text",
@@ -239,34 +239,36 @@ def parse_arguments():
         raise Exception("Please provide your OpenAI API key")
     return options
 
+def check_file_path(file_path: Path, options=None):
+    """
+    Ensure file extension is in ALLOWED_FILE_TYPES or is a URL.
+    If file ends with _translated.txt or _bilingual.txt, skip it.
+    If there is any txt file ending with _translated.txt or _bilingual.txt, skip it.
+    """
+    if not file_path.suffix.lower() in ALLOWED_FILE_TYPES and not str(file_path).startswith('http'):
+        raise Exception("Please use a txt file or URL")
+
+    if file_path.stem.endswith("_translated") or file_path.stem.endswith("extracted_translated"):
+        print(f"You already have a translated file for {file_path}, skipping...")
+        return False
+    elif file_path.stem.endswith("_bilingual") or file_path.stem.endswith("extracted_bilingual"):
+        print(f"You already have a bilingual file for {file_path}, skipping...")
+        return False
+
+    if (file_path.with_name(f"{file_path.stem}_translated{file_path.suffix}").exists() or
+            file_path.with_name(f"{file_path.stem}_extracted_translated{file_path.suffix}").exists()) and not (options and options.get('bilingual', False)):
+        print(f"You already have a translated file for {file_path}, skipping...")
+        return False
+    elif (file_path.with_name(f"{file_path.stem}_bilingual{file_path.suffix}").exists() or
+            file_path.with_name(f"{file_path.stem}_extracted_bilingual{file_path.suffix}").exists()) and (options and options.get('bilingual', False)):
+        print(f"You already have a bilingual file for {file_path}, skipping...")
+        return False
+
+    return True
 
 def process_file(file_path, options):
     """Translate a single text file"""
-    # ensure file extension is in ALLOWED_FILE_TYPES or is a URL
-    if not file_path.suffix.lower() in ALLOWED_FILE_TYPES and not str(
-            file_path).startswith('http'):
-        raise Exception("Please use a txt file or URL")
-    # if file ends with _translated.txt or _bilingual.txt, skip it
-    if file_path.stem.endswith("_translated"):
-        print(
-            f"You already have a translated file for {file_path}, skipping...")
-        return
-    elif file_path.stem.endswith("_bilingual"):
-        print(
-            f"You already have a bilingual file for {file_path}, skipping...")
-        return
-    # if there is any txt file ending with _translated.txt or _bilingual.txt, skip it
-    if (file_path.with_name(
-            f"{file_path.stem}_translated{file_path.suffix}").exists()
-            and not options.bilingual):
-        print(
-            f"You already have a translated file for {file_path}, skipping...")
-        return
-    elif (file_path.with_name(
-            f"{file_path.stem}_bilingual{file_path.suffix}").exists()
-          and options.bilingual):
-        print(
-            f"You already have a bilingual file for {file_path}, skipping...")
+    if not check_file_path(file_path, options):
         return
     print(f"Translating {file_path}...")
     translate_text_file(str(file_path), options)
@@ -289,13 +291,11 @@ def main():
     """Main function"""
     options = parse_arguments()
     input_path = Path(options.input_path)
-    if input_path.is_file:
-        process_file(input_path, options)
-    elif not input_path.exists():
-        raise Exception("Input path does not exist")
-    elif input_path.is_dir():
+    if input_path.is_dir():
         # input path is a folder, scan and process all allowed file types
         process_folder(input_path, options)
+    elif input_path.is_file:
+        process_file(input_path, options)
 
 
 if __name__ == "__main__":
