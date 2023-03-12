@@ -84,7 +84,7 @@ def translate_text_file(text_filepath, options):
     OPENAI_API_KEY = options.openai_key or os.environ.get("OPENAI_API_KEY")
     translator = ChatGPT(OPENAI_API_KEY, options.target_language, options.whether_translate_names)
 
-    with open(text_filepath, "r") as f:
+    with open(text_filepath, "r", encoding='utf-8') as f:
         text = f.read()
         if text_filepath.endswith('.html'):
             text = trafilatura.extract(text)
