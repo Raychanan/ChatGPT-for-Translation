@@ -49,5 +49,7 @@ You need a OpenAI API key (https://beta.openai.com/signup/)
 ## Arguments | 可用参数
 ```
 --num_threads: The number of threads to use for translation (default: 5).
---whether_translate_names Whether or not to translate names in the text. This can be useful if you are translating academic texts.
+--translate_people_names Whether or not to translate names in the text. This can be useful if you are translating academic texts.
+--keep_first_three_paragraphs Keep the first three paragraphs of the original text. By default, false.
+--include_references By default, not to translate references.
 ```
