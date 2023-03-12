@@ -255,14 +255,15 @@ def check_file_path(file_path: Path, options=None):
         print(f"You already have a bilingual file for {file_path}, skipping...")
         return False
 
-    if (file_path.with_name(f"{file_path.stem}_translated{file_path.suffix}").exists() or
-            file_path.with_name(f"{file_path.stem}_extracted_translated{file_path.suffix}").exists()) and not (options and options.get('bilingual', False)):
+    if (file_path.with_name(f"{file_path.stem}_translated.txt").exists() or
+            file_path.with_name(f"{file_path.stem}_extracted_translated.txt").exists()) and not getattr(options, 'bilingual', False):
         print(f"You already have a translated file for {file_path}, skipping...")
         return False
-    elif (file_path.with_name(f"{file_path.stem}_bilingual{file_path.suffix}").exists() or
-            file_path.with_name(f"{file_path.stem}_extracted_bilingual{file_path.suffix}").exists()) and (options and options.get('bilingual', False)):
+    elif (file_path.with_name(f"{file_path.stem}_bilingual.txt").exists() or
+            file_path.with_name(f"{file_path.stem}_extracted_bilingual.txt").exists()) and getattr(options, 'bilingual', False):
         print(f"You already have a bilingual file for {file_path}, skipping...")
         return False
+
 
     return True
 
