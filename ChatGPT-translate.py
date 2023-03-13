@@ -48,7 +48,7 @@ class ChatGPT:
                             "role":
                             "user",
                             "content":
-                            f"Translate the following text into {self.target_language} in a way that is faithful to the original text. Do not translate people and authors' names. Return only the translation and nothing else:\n{text}",
+                            f"Translate the following text into {self.target_language} in a way that is faithful to the original text. But do not translate people and authors' names and surnames. Return only the translation and nothing else:\n{text}",
                         }],
                     )
                 else:
@@ -93,7 +93,7 @@ def translate_text_file(text_filepath_or_url, options):
     first_three_paragraphs = paragraphs[:3]
 
     # if users require to ignore References, we then take out all paragraphs after the one starting with "References"
-    if options.include_references:
+    if options.not_to_translate_references:
         for i, p in enumerate(paragraphs):
             if p.startswith("Acknowledgment") or p.startswith(
                     "Notes") or p.startswith("NOTES") or p.startswith(
@@ -103,15 +103,16 @@ def translate_text_file(text_filepath_or_url, options):
                 paragraphs = paragraphs[:i]
                 break
 
-        with ThreadPoolExecutor(max_workers=options.num_threads) as executor:
-            translated_paragraphs = list(
-                tqdm(executor.map(translator.translate, paragraphs),
-                     total=len(paragraphs),
-                     desc="Translating paragraphs",
-                     unit="paragraph"))
-            translated_paragraphs = [p.strip() for p in translated_paragraphs]
+    with ThreadPoolExecutor(max_workers=options.num_threads) as executor:
+        translated_paragraphs = list(
+            tqdm(executor.map(translator.translate, paragraphs),
+                    total=len(paragraphs),
+                    desc="Translating paragraphs",
+                    unit="paragraph"))
+        translated_paragraphs = [p.strip() for p in translated_paragraphs]
 
-        translated_text = "\n".join(translated_paragraphs)
+    translated_text = "\n".join(translated_paragraphs)
+
     if options.bilingual:
         bilingual_text = "\n".join(f"{paragraph}\n{translation}"
                                    for paragraph, translation in zip(
@@ -121,7 +122,7 @@ def translate_text_file(text_filepath_or_url, options):
             bilingual_text = "\n".join(
                 first_three_paragraphs) + "\n" + bilingual_text
         # append References
-        if options.include_references:
+        if options.not_to_translate_references:
             bilingual_text += "\n".join(ref_paragraphs)
         output_file = f"{Path(text_filepath_or_url).parent}/{Path(text_filepath_or_url).stem}_bilingual.txt"
         with open(output_file, "w") as f:
@@ -135,7 +136,7 @@ def translate_text_file(text_filepath_or_url, options):
             translated_text = "\n".join(
                 first_three_paragraphs) + "\n" + translated_text
         # append References
-        if options.include_references:
+        if options.not_to_translate_references:
             translated_text += "\n" + "\n".join(ref_paragraphs)
         output_file = f"{Path(text_filepath_or_url).parent}/{Path(text_filepath_or_url).stem}_translated.txt"
         with open(output_file, "w") as f:
@@ -218,14 +219,14 @@ def parse_arguments():
         "--not_to_translate_people_names",
         dest="not_to_translate_people_names",
         action="store_true",
-        default=True,
+        default=False,
         help="whether or not to translate names in the text",
     )
     parser.add_argument(
-        "--include_references",
-        dest="include_references",
+        "--not_to_translate_references",
+        dest="not_to_translate_references",
         action="store_true",
-        default=True,
+        default=False,
         help="not to translate references",
     )
     parser.add_argument(
