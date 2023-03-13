@@ -8,6 +8,7 @@ from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
 import openai
 import trafilatura
+import requests
 
 ALLOWED_FILE_TYPES = [".txt", ".md", ".rtf", ".html"]
 
@@ -91,7 +92,9 @@ def translate_text_file(text_filepath_or_url, options):
     # if users require to ignore References, we then take out all paragraphs after the one starting with "References"
     if options.include_references:
         for i, p in enumerate(paragraphs):
-            if p.startswith("References"):
+            if p.startswith("Acknowledgment") or p.startswith(
+                    "Notes") or p.startswith("NOTES") or p.startswith(
+                        "Disclosure statement") or p.startswith("References"):
                 print("References will not be translated.")
                 ref_paragraphs = paragraphs[i:]
                 paragraphs = paragraphs[:i]
@@ -130,14 +133,11 @@ def translate_text_file(text_filepath_or_url, options):
                 first_three_paragraphs) + "\n" + translated_text
         # append References
         if options.include_references:
-            translated_text += "\n".join(ref_paragraphs)
+            translated_text += "\n" + "\n".join(ref_paragraphs)
         output_file = f"{Path(text_filepath_or_url).parent}/{Path(text_filepath_or_url).stem}_translated.txt"
         with open(output_file, "w") as f:
             f.write(translated_text)
             print(f"Translated text saved to {f.name}.")
-
-
-import requests
 
 
 def download_html(url):
@@ -232,6 +232,14 @@ def parse_arguments():
         default=True,
         help="keep the first three paragraphs of the original text",
     )
+    # add arg: only_process_this_file_extension
+    parser.add_argument(
+        "--only_process_this_file_extension",
+        dest="only_process_this_file_extension",
+        type=str,
+        default="",
+        help="only process files with this extension",
+    )
 
     options = parser.parse_args()
     OPENAI_API_KEY = options.openai_key or os.environ.get("OPENAI_API_KEY")
@@ -239,33 +247,43 @@ def parse_arguments():
         raise Exception("Please provide your OpenAI API key")
     return options
 
+
 def check_file_path(file_path: Path, options=None):
     """
     Ensure file extension is in ALLOWED_FILE_TYPES or is a URL.
     If file ends with _translated.txt or _bilingual.txt, skip it.
     If there is any txt file ending with _translated.txt or _bilingual.txt, skip it.
     """
-    if not file_path.suffix.lower() in ALLOWED_FILE_TYPES and not str(file_path).startswith('http'):
+    if not file_path.suffix.lower() in ALLOWED_FILE_TYPES and not str(
+            file_path).startswith('http'):
         raise Exception("Please use a txt file or URL")
 
-    if file_path.stem.endswith("_translated") or file_path.stem.endswith("extracted_translated"):
-        print(f"You already have a translated file for {file_path}, skipping...")
+    if file_path.stem.endswith("_translated") or file_path.stem.endswith(
+            "extracted_translated"):
+        print(
+            f"You already have a translated file for {file_path}, skipping...")
         return False
-    elif file_path.stem.endswith("_bilingual") or file_path.stem.endswith("extracted_bilingual"):
-        print(f"You already have a bilingual file for {file_path}, skipping...")
+    elif file_path.stem.endswith("_bilingual") or file_path.stem.endswith(
+            "extracted_bilingual"):
+        print(
+            f"You already have a bilingual file for {file_path}, skipping...")
         return False
 
     if (file_path.with_name(f"{file_path.stem}_translated.txt").exists() or
-            file_path.with_name(f"{file_path.stem}_extracted_translated.txt").exists()) and not getattr(options, 'bilingual', False):
-        print(f"You already have a translated file for {file_path}, skipping...")
+            file_path.with_name(f"{file_path.stem}_extracted_translated.txt").
+            exists()) and not getattr(options, 'bilingual', False):
+        print(
+            f"You already have a translated file for {file_path}, skipping...")
         return False
-    elif (file_path.with_name(f"{file_path.stem}_bilingual.txt").exists() or
-            file_path.with_name(f"{file_path.stem}_extracted_bilingual.txt").exists()) and getattr(options, 'bilingual', False):
-        print(f"You already have a bilingual file for {file_path}, skipping...")
+    elif (file_path.with_name(f"{file_path.stem}_bilingual.txt").exists()
+          or file_path.with_name(f"{file_path.stem}_extracted_bilingual.txt").
+          exists()) and getattr(options, 'bilingual', False):
+        print(
+            f"You already have a bilingual file for {file_path}, skipping...")
         return False
-
 
     return True
+
 
 def process_file(file_path, options):
     """Translate a single text file"""
@@ -277,7 +295,16 @@ def process_file(file_path, options):
 
 def process_folder(folder_path, options):
     """Translate all text files in a folder"""
-    files_to_process = list(folder_path.rglob("*"))
+    # if only_process_this_file_extension is set, only process files with this extension
+    if options.only_process_this_file_extension:
+        files_to_process = list(
+            folder_path.rglob(f"*.{options.only_process_this_file_extension}"))
+        print(
+            f"Only processing files with extension {options.only_process_this_file_extension}"
+        )
+        print(f"Found {len(files_to_process)} files to process")
+    else:
+        files_to_process = list(folder_path.rglob("*"))
     total_files = len(files_to_process)
     for index, file_path in enumerate(files_to_process):
         if file_path.is_file() and file_path.suffix.lower(
