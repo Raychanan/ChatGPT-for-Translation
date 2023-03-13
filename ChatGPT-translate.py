@@ -26,6 +26,8 @@ class ChatGPT:
     def translate(self, text):
         # Set up OpenAI API key
         openai.api_key = self.key
+        if not text:
+            return ""
         # lang
         while True:
             try:
@@ -36,6 +38,7 @@ class ChatGPT:
                 self.last_request_time = time.monotonic()
                 # change prompt based on not_to_translate_people_names
                 if self.not_to_translate_people_names:
+                    print("People and authors' names will not be translated.")
                     completion = openai.ChatCompletion.create(
                         model="gpt-3.5-turbo",
                         messages=[{
