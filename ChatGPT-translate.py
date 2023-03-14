@@ -92,15 +92,22 @@ def translate_text_file(text_filepath_or_url, options):
     first_three_paragraphs = paragraphs[:3]
 
     # if users require to ignore References, we then take out all paragraphs after the one starting with "References"
+
     if options.not_to_translate_references:
+        ignore_strings = ["Acknowledgment", "Notes", "NOTES", "disclosure statement", "References", "Funding", "declaration of conflicting interest", "acknowledgment", "supplementary material", "Acknowledgements"]
+        ignore_indices = []
         for i, p in enumerate(paragraphs):
-            if p.startswith("Acknowledgment") or p.startswith(
-                    "Notes") or p.startswith("NOTES") or p.startswith(
-                        "Disclosure statement") or p.startswith("References") or p.startswith("Funding") or p.lower().startswith("declaration of conflicting interest"):
-                print("References will not be translated.")
-                ref_paragraphs = paragraphs[i:]
-                paragraphs = paragraphs[:i]
-                break
+            for ignore_str in ignore_strings:
+                if p.startswith(ignore_str) or p.lower().startswith(ignore_str.lower()):
+                    ignore_indices.append(i)
+                    break
+        if ignore_indices:
+            print("References will not be translated.")
+            ref_paragraphs = paragraphs[i:]
+            paragraphs = paragraphs[:min(ignore_indices)]
+        else:
+            print(paragraphs[-3:])
+            raise Exception("No References found.")
 
     with ThreadPoolExecutor(max_workers=options.num_threads) as executor:
         translated_paragraphs = list(
