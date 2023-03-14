@@ -97,7 +97,7 @@ def translate_text_file(text_filepath_or_url, options):
         ignore_indices = []
         for i, p in enumerate(paragraphs):
             for ignore_str in ignore_strings:
-                if p.startswith(ignore_str) or p.lower().startswith(ignore_str.lower()):
+                if (p.startswith(ignore_str) or p.lower().startswith(ignore_str.lower())) and len(p) < 30:
                     ignore_indices.append(i)
                     break
         if ignore_indices:
