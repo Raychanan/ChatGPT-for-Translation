@@ -3,9 +3,8 @@ import re
 from tqdm import tqdm
 import argparse
 import time
-from os import environ as env
 from pathlib import Path
-from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
+from concurrent.futures import ThreadPoolExecutor
 import openai
 import trafilatura
 import requests
