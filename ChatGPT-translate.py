@@ -38,7 +38,6 @@ class ChatGPT:
                 self.last_request_time = time.monotonic()
                 # change prompt based on not_to_translate_people_names
                 if self.not_to_translate_people_names:
-                    print("People and authors' names will not be translated.")
                     completion = openai.ChatCompletion.create(
                         model="gpt-3.5-turbo",
                         messages=[{
@@ -97,7 +96,7 @@ def translate_text_file(text_filepath_or_url, options):
         for i, p in enumerate(paragraphs):
             if p.startswith("Acknowledgment") or p.startswith(
                     "Notes") or p.startswith("NOTES") or p.startswith(
-                        "Disclosure statement") or p.startswith("References"):
+                        "Disclosure statement") or p.startswith("References") or p.startswith("Funding") or p.lower().startswith("declaration of conflicting interest"):
                 print("References will not be translated.")
                 ref_paragraphs = paragraphs[i:]
                 paragraphs = paragraphs[:i]

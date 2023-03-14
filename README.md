@@ -39,7 +39,6 @@ This command will translate the text in input.txt into Simplified Chinese using 
 
 `python ChatGPT-translate.py --input_path=input.txt --openai_key=password --bilingual --num_threads 20 --target_lang="Traditional Chinese"`
 
-
 ## Prerequisites | 要求
 You need a OpenAI API key (https://beta.openai.com/signup/)
 
