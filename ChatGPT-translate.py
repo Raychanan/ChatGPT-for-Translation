@@ -88,7 +88,7 @@ def translate_text_file(text_filepath_or_url, options):
     paragraphs = read_and_preprocess_data(text_filepath_or_url)
 
     # keep first three paragraphs
-    first_three_paragraphs = paragraphs[:3]
+    first_three_paragraphs = paragraphs[:2]
 
     # if users require to ignore References, we then take out all paragraphs after the one starting with "References"
 
@@ -123,7 +123,7 @@ def translate_text_file(text_filepath_or_url, options):
                                    for paragraph, translation in zip(
                                        paragraphs, translated_paragraphs))
         # add first three paragraphs if required
-        if options.keep_first_three_paragraphs:
+        if options.keep_first_two_paragraphs:
             bilingual_text = "\n".join(
                 first_three_paragraphs) + "\n" + bilingual_text
         # append References
@@ -137,7 +137,7 @@ def translate_text_file(text_filepath_or_url, options):
         # remove extra newlines
         translated_text = re.sub(r"\n{2,}", "\n", translated_text)
         # add first three paragraphs if required
-        if options.keep_first_three_paragraphs:
+        if options.keep_first_two_paragraphs:
             translated_text = "\n".join(
                 first_three_paragraphs) + "\n" + translated_text
         # append References
@@ -235,8 +235,8 @@ def parse_arguments():
         help="not to translate references",
     )
     parser.add_argument(
-        "--keep_first_three_paragraphs",
-        dest="keep_first_three_paragraphs",
+        "--keep_first_two_paragraphs",
+        dest="keep_first_two_paragraphs",
         action="store_true",
         default=True,
         help="keep the first three paragraphs of the original text",
