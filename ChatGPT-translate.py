@@ -102,7 +102,7 @@ def translate_text_file(text_filepath_or_url, options):
                     break
         if ignore_indices:
             print("References will not be translated.")
-            ref_paragraphs = paragraphs[i:]
+            ref_paragraphs = paragraphs[min(ignore_indices):]
             paragraphs = paragraphs[:min(ignore_indices)]
         else:
             print(paragraphs[-3:])
