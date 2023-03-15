@@ -144,7 +144,7 @@ def translate_text_file(text_filepath_or_url, options):
         if options.not_to_translate_references:
             translated_text += "\n" + "\n".join(ref_paragraphs)
         output_file = f"{Path(text_filepath_or_url).parent}/{Path(text_filepath_or_url).stem}_translated.txt"
-        with open(output_file, "w") as f:
+        with open(output_file, "w", encoding="utf-8") as f:
             f.write(translated_text)
             print(f"Translated text saved to {f.name}.")
 
