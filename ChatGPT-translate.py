@@ -238,7 +238,7 @@ def parse_arguments():
         "--keep_first_two_paragraphs",
         dest="keep_first_two_paragraphs",
         action="store_true",
-        default=True,
+        default=False,
         help="keep the first three paragraphs of the original text",
     )
     # add arg: only_process_this_file_extension
