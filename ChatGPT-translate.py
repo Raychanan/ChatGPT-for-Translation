@@ -108,20 +108,40 @@ def translate_text_file(text_filepath_or_url, options):
             print(paragraphs[-3:])
             raise Exception("No References found.")
 
+
+    def split_and_translate(paragraph):
+        import nltk
+        try:
+            nltk.data.find('tokenizers/punkt')
+        except:
+            nltk.download('punkt')
+        from nltk.tokenize import sent_tokenize
+        
+        words = paragraph.split()
+        if len(words) > 4000:
+            sentences = sent_tokenize(paragraph)
+            half = len(sentences) // 2
+            first_half = " ".join(sentences[:half])
+            second_half = " ".join(sentences[half:])
+            translated_first_half = translator.translate(first_half).strip()
+            translated_second_half = translator.translate(second_half).strip()
+            return translated_first_half + " " + translated_second_half
+        else:
+            return translator.translate(paragraph).strip()
+
     with ThreadPoolExecutor(max_workers=options.num_threads) as executor:
         translated_paragraphs = list(
-            tqdm(executor.map(translator.translate, paragraphs),
+            tqdm(executor.map(split_and_translate, paragraphs),
                     total=len(paragraphs),
                     desc="Translating paragraphs",
                     unit="paragraph"))
-        translated_paragraphs = [p.strip() for p in translated_paragraphs]
 
     translated_text = "\n".join(translated_paragraphs)
 
     if options.bilingual:
         bilingual_text = "\n".join(f"{paragraph}\n{translation}"
                                    for paragraph, translation in zip(
-                                       paragraphs, translated_paragraphs))
+                                      paragraphs, translated_paragraphs))
         # add first three paragraphs if required
         if options.keep_first_two_paragraphs:
             bilingual_text = "\n".join(
