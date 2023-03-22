@@ -13,7 +13,7 @@ Use this tool on Google Colab (recommended): https://colab.research.google.com/d
 git clone https://github.com/Raychanan/ChatGPT-for-Translation.git
 cd ./ChatGPT-for-Translation/
 pip install -r requirements.txt --quiet
-python ChatGPT-translate.py --input_path=input.txt --openai_key=password --target_lang="Chinese"`
+python ChatGPT-translate.py --input_path=input.txt --openai_key=password --target_lang="Chinese"
 ```
 
 This command will translate the text in input.txt into Simplified Chinese using ChatGPT. You can also specify any language you want. For example, `--target_lang="Japanese"`. See this txt as an [example](input_translated.txt).
