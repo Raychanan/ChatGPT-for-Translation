@@ -10,7 +10,14 @@ import requests
 import trafilatura
 from tqdm import tqdm
 from utils.bilingual_txt_to_docx import create_bilingual_docx
-ALLOWED_FILE_TYPES = [".txt", ".md", ".rtf", ".html", ".pdf",]
+
+ALLOWED_FILE_TYPES = [
+    ".txt",
+    ".md",
+    ".rtf",
+    ".html",
+    ".pdf",
+]
 
 
 def translate(key, target_language, not_to_translate_people_names, text):
@@ -72,6 +79,7 @@ def translate(key, target_language, not_to_translate_people_names, text):
 
     return t_text
 
+
 def remove_empty_paragraphs(text):
     # Split the text into paragraphs
     if isinstance(text, str):
@@ -82,6 +90,11 @@ def remove_empty_paragraphs(text):
 
     # Join the non-empty paragraphs back into a string
     return '\n'.join(non_empty_paragraphs)
+
+
+import os
+import concurrent.futures
+from tqdm import tqdm
 
 
 def translate_text_file(text_filepath_or_url, options):
@@ -117,12 +130,12 @@ def translate_text_file(text_filepath_or_url, options):
     with ThreadPoolExecutor(max_workers=options.num_threads) as executor:
         translated_paragraphs = list(
             tqdm(executor.map(
-                lambda text: translate(
-                    OPENAI_API_KEY, options.target_language, options.
-                    not_to_translate_people_names, text), paragraphs),
-                    total=len(paragraphs),
-                    desc="Translating paragraphs",
-                    unit="paragraph"))
+                lambda text:
+                translate(OPENAI_API_KEY, options.target_language, options.
+                          not_to_translate_people_names, text), paragraphs),
+                 total=len(paragraphs),
+                 desc="Translating paragraphs",
+                 unit="paragraph"))
         translated_paragraphs = [p.strip() for p in translated_paragraphs]
 
     translated_text = "\n".join(translated_paragraphs)
@@ -166,7 +179,9 @@ def download_html(url):
     response = requests.get(url)
     return response.text
 
+
 from utils.parse_pdfs.extract_pdfs import process_pdfs
+
 
 def read_and_preprocess_data(text_filepath_or_url, options):
     if text_filepath_or_url.startswith('http'):
@@ -204,9 +219,10 @@ def read_and_preprocess_data(text_filepath_or_url, options):
     # Remove paragraphs after "References" or other keywords in ignore_strings
     if options.remove_references:
         ignore_strings = [
-            "Acknowledgment", "Acknowledgments", "Notes", "NOTES", "disclosure statement",
-            "References", "Funding", "declaration of conflicting interest",
-            "acknowledgment", "supplementary material", "Acknowledgements"
+            "Acknowledgment", "Acknowledgments", "Notes", "NOTES",
+            "disclosure statement", "References", "Funding",
+            "declaration of conflicting interest", "acknowledgment",
+            "supplementary material", "Acknowledgements"
         ]
         for i, p in enumerate(paragraphs):
             for ignore_str in ignore_strings:
