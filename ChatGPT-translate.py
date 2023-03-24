@@ -1,103 +1,122 @@
+import argparse
 import os
 import re
-from tqdm import tqdm
-import argparse
 import time
-from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+
 import openai
-import trafilatura
 import requests
+import trafilatura
+from tqdm import tqdm
+from utils.bilingual_txt_to_docx import create_bilingual_docx
 
-ALLOWED_FILE_TYPES = [".txt", ".md", ".rtf", ".html"]
+ALLOWED_FILE_TYPES = [
+    ".txt",
+    ".md",
+    ".rtf",
+    ".html",
+    ".pdf",
+]
 
 
-class ChatGPT:
+def translate(key, target_language, not_to_translate_people_names, text):
+    last_request_time = 0
+    request_interval = 1  # seconds
+    max_backoff_time = 60  # seconds
 
-    def __init__(self, key, target_language, not_to_translate_people_names):
-        self.key = key
-        self.target_language = target_language
-        self.last_request_time = 0
-        self.request_interval = 1  # seconds
-        self.max_backoff_time = 60  # seconds
-        self.not_to_translate_people_names = not_to_translate_people_names
-
-    def translate(self, text):
-        # Set up OpenAI API key
-        openai.api_key = self.key
-        if not text:
-            return ""
-        # lang
-        while True:
-            try:
-                # Check if enough time has passed since the last request
-                elapsed_time = time.monotonic() - self.last_request_time
-                if elapsed_time < self.request_interval:
-                    time.sleep(self.request_interval - elapsed_time)
-                self.last_request_time = time.monotonic()
-                # change prompt based on not_to_translate_people_names
-                if self.not_to_translate_people_names:
-                    completion = openai.ChatCompletion.create(
-                        model="gpt-3.5-turbo",
-                        messages=[{
-                            'role': 'system',
-                            'content': 'You are a translator assistant.'
-                        }, {
-                            "role":
-                            "user",
-                            "content":
-                            f"Translate the following text into {self.target_language} in a way that is faithful to the original text. But do not translate people and authors' names and surnames. Return only the translation and nothing else:\n{text}",
-                        }],
-                    )
-                else:
-                    completion = openai.ChatCompletion.create(
-                        model="gpt-3.5-turbo",
-                        messages=[{
-                            'role': 'system',
-                            'content': 'You are a translator assistant.'
-                        }, {
-                            "role":
-                            "user",
-                            "content":
-                            f"Translate the following text into {self.target_language} in a way that is faithful to the original text. Return only the translation and nothing else:\n{text}",
-                        }],
-                    )
-                t_text = (completion["choices"][0].get("message").get(
-                    "content").encode("utf8").decode())
-                break
-            except Exception as e:
-                print(str(e))
-                # Exponential backoff if rate limit is hit
-                self.request_interval *= 2
-                if self.request_interval > self.max_backoff_time:
-                    self.request_interval = self.max_backoff_time
-                print(
-                    f"Rate limit hit. Sleeping for {self.request_interval} seconds."
+    # Set up OpenAI API key
+    openai.api_key = key
+    if not text:
+        return ""
+    # lang
+    while True:
+        try:
+            # Check if enough time has passed since the last request
+            elapsed_time = time.monotonic() - last_request_time
+            if elapsed_time < request_interval:
+                time.sleep(request_interval - elapsed_time)
+            last_request_time = time.monotonic()
+            # change prompt based on not_to_translate_people_names
+            if not_to_translate_people_names:
+                completion = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=[{
+                        'role': 'system',
+                        'content': 'You are a translator assistant.'
+                    }, {
+                        "role":
+                        "user",
+                        "content":
+                        f"Translate the following text into {target_language} in a way that is faithful to the original text. But do not translate people and authors' names and surnames. Return only the translation and nothing else:\n{text}",
+                    }],
                 )
-                time.sleep(self.request_interval)
-                continue
+            else:
+                completion = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=[{
+                        'role': 'system',
+                        'content': 'You are a translator assistant.'
+                    }, {
+                        "role":
+                        "user",
+                        "content":
+                        f"Translate the following text into {target_language} in a way that is faithful to the original text. Return only the translation and nothing else:\n{text}",
+                    }],
+                )
+            t_text = (completion["choices"][0].get("message").get(
+                "content").encode("utf8").decode())
+            break
+        except Exception as e:
+            print(str(e))
+            # Exponential backoff if rate limit is hit
+            request_interval *= 2
+            if request_interval > max_backoff_time:
+                request_interval = max_backoff_time
+            print(f"Rate limit hit. Sleeping for {request_interval} seconds.")
+            time.sleep(request_interval)
+            continue
 
-        return t_text
+    return t_text
+
+
+def remove_empty_paragraphs(text):
+    # Split the text into paragraphs
+    if isinstance(text, str):
+        text = text.split('\n')
+
+    # Filter out empty paragraphs
+    non_empty_paragraphs = filter(lambda p: p.strip() != '', text)
+
+    # Join the non-empty paragraphs back into a string
+    return '\n'.join(non_empty_paragraphs)
+
+
+import os
+import concurrent.futures
+from tqdm import tqdm
 
 
 def translate_text_file(text_filepath_or_url, options):
     OPENAI_API_KEY = options.openai_key or os.environ.get("OPENAI_API_KEY")
-    translator = ChatGPT(OPENAI_API_KEY, options.target_language,
-                         options.not_to_translate_people_names)
 
-    paragraphs = read_and_preprocess_data(text_filepath_or_url)
+    paragraphs = read_and_preprocess_data(text_filepath_or_url, options)
 
     # keep first three paragraphs
     first_three_paragraphs = paragraphs[:2]
 
     # if users require to ignore References, we then take out all paragraphs after the one starting with "References"
-
     if options.not_to_translate_references:
-        ignore_strings = ["Acknowledgment", "Notes", "NOTES", "disclosure statement", "References", "Funding", "declaration of conflicting interest", "acknowledgment", "supplementary material", "Acknowledgements"]
+        ignore_strings = [
+            "Acknowledgment", "Notes", "NOTES", "disclosure statement",
+            "References", "Funding", "declaration of conflicting interest",
+            "acknowledgment", "supplementary material", "Acknowledgements"
+        ]
         ignore_indices = []
         for i, p in enumerate(paragraphs):
             for ignore_str in ignore_strings:
-                if (p.startswith(ignore_str) or p.lower().startswith(ignore_str.lower())) and len(p) < 30:
+                if (p.startswith(ignore_str) or p.lower().startswith(
+                        ignore_str.lower())) and len(p) < 30:
                     ignore_indices.append(i)
                     break
         if ignore_indices:
@@ -108,40 +127,23 @@ def translate_text_file(text_filepath_or_url, options):
             print(paragraphs[-3:])
             raise Exception("No References found.")
 
-
-    def split_and_translate(paragraph):
-        import nltk
-        try:
-            nltk.data.find('tokenizers/punkt')
-        except:
-            nltk.download('punkt')
-        from nltk.tokenize import sent_tokenize
-        
-        words = paragraph.split()
-        if len(words) > 4000:
-            sentences = sent_tokenize(paragraph)
-            half = len(sentences) // 2
-            first_half = " ".join(sentences[:half])
-            second_half = " ".join(sentences[half:])
-            translated_first_half = translator.translate(first_half).strip()
-            translated_second_half = translator.translate(second_half).strip()
-            return translated_first_half + " " + translated_second_half
-        else:
-            return translator.translate(paragraph).strip()
-
     with ThreadPoolExecutor(max_workers=options.num_threads) as executor:
         translated_paragraphs = list(
-            tqdm(executor.map(split_and_translate, paragraphs),
-                    total=len(paragraphs),
-                    desc="Translating paragraphs",
-                    unit="paragraph"))
+            tqdm(executor.map(
+                lambda text:
+                translate(OPENAI_API_KEY, options.target_language, options.
+                          not_to_translate_people_names, text), paragraphs),
+                 total=len(paragraphs),
+                 desc="Translating paragraphs",
+                 unit="paragraph"))
+        translated_paragraphs = [p.strip() for p in translated_paragraphs]
 
     translated_text = "\n".join(translated_paragraphs)
 
     if options.bilingual:
         bilingual_text = "\n".join(f"{paragraph}\n{translation}"
                                    for paragraph, translation in zip(
-                                      paragraphs, translated_paragraphs))
+                                       paragraphs, translated_paragraphs))
         # add first three paragraphs if required
         if options.keep_first_two_paragraphs:
             bilingual_text = "\n".join(
@@ -149,10 +151,13 @@ def translate_text_file(text_filepath_or_url, options):
         # append References
         if options.not_to_translate_references:
             bilingual_text += "\n".join(ref_paragraphs)
+        bilingual_text = remove_empty_paragraphs(bilingual_text)
         output_file = f"{Path(text_filepath_or_url).parent}/{Path(text_filepath_or_url).stem}_bilingual.txt"
         with open(output_file, "w") as f:
             f.write(bilingual_text)
             print(f"Bilingual text saved to {f.name}.")
+            create_bilingual_docx(output_file)
+
     else:
         # remove extra newlines
         translated_text = re.sub(r"\n{2,}", "\n", translated_text)
@@ -163,6 +168,7 @@ def translate_text_file(text_filepath_or_url, options):
         # append References
         if options.not_to_translate_references:
             translated_text += "\n" + "\n".join(ref_paragraphs)
+        translated_text = remove_empty_paragraphs(translated_text)
         output_file = f"{Path(text_filepath_or_url).parent}/{Path(text_filepath_or_url).stem}_translated.txt"
         with open(output_file, "w", encoding="utf-8") as f:
             f.write(translated_text)
@@ -174,7 +180,10 @@ def download_html(url):
     return response.text
 
 
-def read_and_preprocess_data(text_filepath_or_url):
+from utils.parse_pdfs.extract_pdfs import process_pdfs
+
+
+def read_and_preprocess_data(text_filepath_or_url, options):
     if text_filepath_or_url.startswith('http'):
         # replace "https:/www" with "https://www"
         text_filepath_or_url = text_filepath_or_url.replace(":/", "://")
@@ -184,6 +193,14 @@ def read_and_preprocess_data(text_filepath_or_url):
         print("Downloaded text:")
         print(downloaded)
         text = trafilatura.extract(downloaded)
+    elif text_filepath_or_url.endswith('.pdf'):
+        # extract text from PDF file
+        print("Extracting text from PDF file...")
+        process_pdfs(text_filepath_or_url)
+        # use newly created txt file
+        text_filepath_or_url = f"{Path(text_filepath_or_url).parent}/{Path(text_filepath_or_url).stem}_extracted.txt"
+        with open(text_filepath_or_url, "r", encoding='utf-8') as f:
+            text = f.read()
     else:
         with open(text_filepath_or_url, "r", encoding='utf-8') as f:
             text = f.read()
@@ -198,6 +215,25 @@ def read_and_preprocess_data(text_filepath_or_url):
                     f.write(text)
                     print(f"Extracted text saved to {f.name}.")
     paragraphs = [p.strip() for p in text.split("\n") if p.strip() != ""]
+
+    # Remove paragraphs after "References" or other keywords in ignore_strings
+    if options.remove_references:
+        ignore_strings = [
+            "Acknowledgment", "Acknowledgments", "Notes", "NOTES",
+            "disclosure statement", "References", "Funding",
+            "declaration of conflicting interest", "acknowledgment",
+            "supplementary material", "Acknowledgements"
+        ]
+        for i, p in enumerate(paragraphs):
+            for ignore_str in ignore_strings:
+                if (p.startswith(ignore_str) or p.lower().startswith(
+                        ignore_str.lower())) and len(p) < 30:
+                    paragraphs = paragraphs[:i]
+                    break
+            else:
+                continue
+            break
+
     return paragraphs
 
 
@@ -268,6 +304,14 @@ def parse_arguments():
         type=str,
         default="",
         help="only process files with this extension",
+    )
+    parser.add_argument(
+        "--remove_references",
+        dest="remove_references",
+        action="store_true",
+        default=False,
+        help=
+        "remove all paragraphs after 'References' or any other similar keywords found in ignore_strings",
     )
 
     options = parser.parse_args()

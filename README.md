@@ -1,11 +1,15 @@
 # ChatGPT for Translation | ChatGPT用于翻译
-This is a simple tool that uses ChatGPT to translate text into a specified target language **in a faithful way to the original**. The tool takes a text file (`.txt`, `.md`, `html` and `.rtf`) or a folder of text files as input, and outputs a **translated** text file or a **bilingual** text file with the original and translated text side by side. This tool automatically handles long paragraphs, sets up multiple threads (to speed up your translation process), considers the frequency limit set by ChatGPT for users, and can be configured to translate names or not (default is to translate).
+This is a simple tool that uses ChatGPT to translate text into a specified target language **in a faithful way to the original**. The tool takes a text file (`.txt`, `.md`, `.pdf`, `.html` and `.rtf`) or a folder of text files as input, and outputs a **translated** text file or a **bilingual** text file with the original and translated text side by side. This tool automatically sets multi-threading (to speed up your translation process) by default, considers the frequency limit set by ChatGPT for users, and can be set to translate personal names or not (default is to translate).
 
-使用ChatGPT将文本以**忠于原文的方式**翻译成指定的目标语言。该工具接受一个文本文件（`.txt`, `.md`, `html`或`.rtf`）或者一个包含文本的文件夹，并生成一个**直接翻译**后的文本或一个**双语的**(并列显示原始文本和翻译文本)文本。这个工具默认自动处理过长的段落、自动设置了多线程(加速你的翻译过程)、自动考虑了ChatGPT给用户设置的频率限制、可以设置是否翻译人名(默认为翻译)。
+使用ChatGPT将文本以**忠于原文的方式**翻译成指定的目标语言。该工具接受一个文本文件（`.txt`, `.md`, `.pdf`, `.html`或`.rtf`）或者一个包含文本的文件夹，并生成一个**直接翻译**后的文本或一个**双语的**(并列显示原始文本和翻译文本)文本。这个工具默认自动设置了多线程(加速你的翻译过程)、自动考虑了ChatGPT给用户设置的频率限制、可以设置是否翻译人名(默认为翻译)。
 
 Use this tool on Google Colab (recommended): https://colab.research.google.com/drive/1_715zHeS3VaZaB9ISyo29Zp-KOTsyP8D?usp=sharing
 
 在 Google Colab 上使用此工具（推荐）：https://colab.research.google.com/drive/1_715zHeS3VaZaB9ISyo29Zp-KOTsyP8D?usp=sharing
+
+Note: Use absolute paths instead of relative paths to process PDFs.
+
+注意：处理 PDF 的时候使用绝对路径而不是相对路径。
 
 ## Simple Example | 简单例子
 
@@ -30,9 +34,9 @@ This command will translate the text in input.txt into Simplified Chinese using 
 `python ChatGPT-translate.py --input_path=input.txt --openai_key=password --target_lang="Japanese"`
 
 
-This command will translate the text in input.txt into Simplified Chinese using ChatGPT, using 20 threads (10 by default) for translation. The output will be a bilingual text file with the original and translated text side by side. See this txt as an [example](input_bilingual.txt)
+This command will translate the text in input.txt into Simplified Chinese using ChatGPT, using 20 threads (10 by default) for translation. The output will be a bilingual text file (both txt and Word files will be generated) with the original and translated text side by side. See this txt as an [example](input_bilingual.txt).
 
-这个命令将使用ChatGPT把input.txt中的文本翻译成简体中文，使用20个线程（默认为5个）进行翻译。输出结果将是一个双语文本文件，其中并列着原始文本和翻译文本。双语翻译后的txt文件例子见[这里](input_bilingual.txt)。
+这个命令将使用ChatGPT把input.txt中的文本翻译成简体中文，使用20个线程（默认为5个）进行翻译。输出结果将是一个双语文本文件(会同时生成txt和Word文档)，其中并列着原始文本和翻译文本。双语翻译后的txt文件例子见[这里](input_bilingual.txt)。
 
 
 ## Speed up Translation | 加速翻译过程
