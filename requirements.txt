@@ -3,3 +3,4 @@ tqdm==4.65.0
 trafilatura==1.4.1
 nltk==3.8.1
 python-docx
+langdetect
