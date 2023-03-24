@@ -10,7 +10,7 @@ import requests
 import trafilatura
 from tqdm import tqdm
 from utils.bilingual_txt_to_docx import create_bilingual_docx
-ALLOWED_FILE_TYPES = [".txt", ".md", ".rtf", ".html"]
+ALLOWED_FILE_TYPES = [".txt", ".md", ".rtf", ".html", ".pdf",]
 
 
 def translate(key, target_language, not_to_translate_people_names, text):
@@ -166,6 +166,7 @@ def download_html(url):
     response = requests.get(url)
     return response.text
 
+from utils.parse_pdfs.extract_pdfs import process_pdfs
 
 def read_and_preprocess_data(text_filepath_or_url, options):
     if text_filepath_or_url.startswith('http'):
@@ -177,6 +178,14 @@ def read_and_preprocess_data(text_filepath_or_url, options):
         print("Downloaded text:")
         print(downloaded)
         text = trafilatura.extract(downloaded)
+    elif text_filepath_or_url.endswith('.pdf'):
+        # extract text from PDF file
+        print("Extracting text from PDF file...")
+        process_pdfs(text_filepath_or_url)
+        # use newly created txt file
+        text_filepath_or_url = f"{Path(text_filepath_or_url).parent}/{Path(text_filepath_or_url).stem}_extracted.txt"
+        with open(text_filepath_or_url, "r", encoding='utf-8') as f:
+            text = f.read()
     else:
         with open(text_filepath_or_url, "r", encoding='utf-8') as f:
             text = f.read()

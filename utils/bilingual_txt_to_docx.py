@@ -29,9 +29,9 @@ def create_bilingual_docx(txt_file):
     # paragraphs = remove_empty_paragraphs(paragraphs)
 
     document = Document()
-    document.styles['Normal'].font.name = u'Source Han Serif SC'
+    document.styles['Normal'].font.name = u'宋体'
     document.styles['Normal']._element.rPr.rFonts.set(qn('w:eastAsia'),
-                                                      u'Source Han Serif SC')
+                                                      u'宋体')
     document.styles['Normal'].font.size = Pt(7)
     document.styles['Normal'].paragraph_format.line_spacing = Pt(0)
 
@@ -61,6 +61,6 @@ def create_bilingual_docx(txt_file):
 
 
 # Example usage:
-create_bilingual_docx(
-    "/Users/raychan/Downloads/GitHub/Find-Most-Relevant-Paragraphs/downloaded-papers/Positive Energy hegemonic intervention and online media discourse in China's Xi Jinping Era_extracted_bilingual.txt"
-)
+# create_bilingual_docx(
+#     "/Users/raychan/Downloads/GitHub/Find-Most-Relevant-Paragraphs/downloaded-papers/Positive Energy hegemonic intervention and online media discourse in China's Xi Jinping Era_extracted_bilingual.txt"
+# )

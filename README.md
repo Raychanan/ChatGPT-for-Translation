@@ -30,9 +30,9 @@ This command will translate the text in input.txt into Simplified Chinese using 
 `python ChatGPT-translate.py --input_path=input.txt --openai_key=password --target_lang="Japanese"`
 
 
-This command will translate the text in input.txt into Simplified Chinese using ChatGPT, using 20 threads (10 by default) for translation. The output will be a bilingual text file with the original and translated text side by side. See this txt as an [example](input_bilingual.txt)
+This command will translate the text in input.txt into Simplified Chinese using ChatGPT, using 20 threads (10 by default) for translation. The output will be a bilingual text file (both txt and Word files will be generated) with the original and translated text side by side. See this txt as an [example](input_bilingual.txt).
 
-这个命令将使用ChatGPT把input.txt中的文本翻译成简体中文，使用20个线程（默认为5个）进行翻译。输出结果将是一个双语文本文件，其中并列着原始文本和翻译文本。双语翻译后的txt文件例子见[这里](input_bilingual.txt)。
+这个命令将使用ChatGPT把input.txt中的文本翻译成简体中文，使用20个线程（默认为5个）进行翻译。输出结果将是一个双语文本文件(会同时生成txt和Word文档)，其中并列着原始文本和翻译文本。双语翻译后的txt文件例子见[这里](input_bilingual.txt)。
 
 
 ## Speed up Translation | 加速翻译过程
