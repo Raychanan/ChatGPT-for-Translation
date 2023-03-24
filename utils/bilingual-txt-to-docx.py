@@ -13,8 +13,8 @@ def create_bilingual_docx(txt_file, output_docx):
         paragraphs = f.readlines()
 
     document = Document()
-    document.styles['Normal'].font.name = u'宋体'
-    document.styles['Normal']._element.rPr.rFonts.set(qn('w:eastAsia'), u'宋体')
+    document.styles['Normal'].font.name = u'Source Han Serif SC'
+    document.styles['Normal']._element.rPr.rFonts.set(qn('w:eastAsia'), u'Source Han Serif SC')
     document.styles['Normal'].font.size = Pt(7)
 
     # Create English style
@@ -22,7 +22,6 @@ def create_bilingual_docx(txt_file, output_docx):
     english_font = english_style.font
     english_style.font.name = "Times New Roman"
     english_font.size = Pt(11)
-    # english_style.paragraph_format.space_before = Pt(5)
     english_style.paragraph_format.line_spacing = 1.2
 
     # Apply styles to paragraphs
@@ -32,7 +31,6 @@ def create_bilingual_docx(txt_file, output_docx):
             paragraph = document.add_paragraph(paragraph_text, style='Normal')
             paragraph.paragraph_format.space_before = Pt(2)
             paragraph.paragraph_format.space_after = Pt(0)
-
         else:
             paragraph = document.add_paragraph(paragraph_text, style='EnglishStyle')
             paragraph.paragraph_format.space_before = Pt(5)
