@@ -80,22 +80,60 @@ def convert_pdf_dict_into_string(pdf_dict):
     return "\n".join(contents)
 
 
+import re
+import nltk
+
+nltk.download('punkt')
+
+import re
+import nltk
+
+nltk.download('punkt')
+
 def split_fist_joined_text(text):
-    '''sometimes the first paragraph in the body content would be joined with the abstract. 
-    This function corrects such cases.'''
+    '''
+    sometimes the first paragraph in the body content would be joined with the abstract.
+    This function corrects such cases.
+    '''
 
-    # Find the index of the first period followed by a character instead of a space
-    match = re.search('\.\w', text)
+    # Find the index of "Abstract"
+    abstract_index = text.lower().find("abstract")
 
-    if match:
-        # Split the text into two paragraphs while keeping the period
-        split_index = match.start() + 1
-        first_paragraph = text[:split_index]
-        second_paragraph = text[split_index:].strip()
-        return f"{first_paragraph}\n{second_paragraph}"
-    else:
-        # Return the original text
-        return text
+    if abstract_index != -1:
+        abstract_end = abstract_index + len("abstract")
+        first_paragraph = text[:abstract_end]
+        remaining_text = text[abstract_end:].strip()
+
+        paragraphs = remaining_text.split("\n", 1)
+
+        if len(paragraphs) > 1:
+            first_body_paragraph, second_body_paragraph = paragraphs
+            first_body_paragraph = first_body_paragraph.strip()
+            second_body_paragraph = second_body_paragraph.strip()
+
+            # Case 1: Find the index of the first period followed by a character instead of a space
+            match = re.search('\.\w', first_body_paragraph)
+
+            if match:
+                split_index = match.start() + 1
+                truncated_part = first_body_paragraph[split_index:].strip()
+                first_body_paragraph = first_body_paragraph[:split_index]
+                second_body_paragraph = f"{truncated_part} {second_body_paragraph}"
+                return f"{first_paragraph}\n{first_body_paragraph}\n{second_body_paragraph}"
+
+            # Case 2: Second paragraph starts with a lowercase letter
+            if second_body_paragraph and second_body_paragraph[0].islower():
+                sentences = nltk.sent_tokenize(first_body_paragraph)
+                if len(sentences) > 1:
+                    last_sentence = sentences[-1]
+                    first_body_paragraph = first_body_paragraph[:-len(last_sentence)].rstrip()
+                    second_body_paragraph = f"{last_sentence} {second_body_paragraph}"
+
+                return f"{first_paragraph}\n{first_body_paragraph}\n{second_body_paragraph}"
+
+    # Return the original text
+    return text
+
 
 
 def write_extracted_pdf_to_file(string, file_path):

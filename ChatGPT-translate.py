@@ -48,7 +48,7 @@ def translate(key, target_language, not_to_translate_people_names, text):
                         "role":
                         "user",
                         "content":
-                        f"Translate the following text into {target_language} in a way that is faithful to the original text. But do not translate people and authors' names and surnames. Do not remove numbers in texts. Return only the translation and nothing else:\n{text}",
+                        f"Translate the following text into {target_language} in a way that is faithful to the original text. But do not translate people and authors' names and surnames. Do not remove numbers. Return only the translation and nothing else:\n{text}",
                     }],
                 )
             else:
