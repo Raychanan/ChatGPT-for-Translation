@@ -3,10 +3,6 @@ This is a simple tool that uses ChatGPT to translate text into a specified targe
 
 使用ChatGPT将文本以**忠于原文的方式**翻译成指定的目标语言。该工具接受一个文本文件（`.txt`, `.md`, `.pdf`, `.html`或`.rtf`）或者一个包含文本的文件夹，并生成一个**直接翻译**后的文本或一个**双语的**(并列显示原始文本和翻译文本)文本。这个工具默认自动设置了多线程(加速你的翻译过程)、自动考虑了ChatGPT给用户设置的频率限制、可以设置是否翻译人名(默认为翻译)。
 
-Use this tool on Google Colab (recommended): https://colab.research.google.com/drive/1_715zHeS3VaZaB9ISyo29Zp-KOTsyP8D?usp=sharing
-
-在 Google Colab 上使用此工具（推荐）：https://colab.research.google.com/drive/1_715zHeS3VaZaB9ISyo29Zp-KOTsyP8D?usp=sharing
-
 Note: Use absolute paths instead of relative paths to process PDFs.
 
 注意：处理 PDF 的时候使用绝对路径而不是相对路径。
