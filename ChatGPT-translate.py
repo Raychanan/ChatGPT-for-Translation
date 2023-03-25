@@ -240,85 +240,29 @@ def read_and_preprocess_data(text_filepath_or_url, options):
 def parse_arguments():
     """Parse command-line arguments"""
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--input_path",
-        dest="input_path",
-        type=str,
-        help="input file or folder to translate",
-    )
-    parser.add_argument(
-        "--openai_key",
-        dest="openai_key",
-        type=str,
-        default="",
-        help="OpenAI API key",
-    )
-    parser.add_argument(
-        "--num_threads",
-        dest="num_threads",
-        type=int,
-        default=10,
-        help="number of threads to use for translation",
-    )
-    parser.add_argument(
-        "--bilingual",
-        dest="bilingual",
-        action="store_true",
-        default=False,
-        help=
-        "output bilingual txt file with original and translated text side by side",
-    )
-    parser.add_argument(
-        "--target_language",
-        dest="target_language",
-        type=str,
-        default="Simplified Chinese",
-        help="target language to translate to",
-    )
 
-    parser.add_argument(
-        "--not_to_translate_people_names",
-        dest="not_to_translate_people_names",
-        action="store_true",
-        default=False,
-        help="whether or not to translate names in the text",
-    )
-    parser.add_argument(
-        "--not_to_translate_references",
-        dest="not_to_translate_references",
-        action="store_true",
-        default=False,
-        help="not to translate references",
-    )
-    parser.add_argument(
-        "--keep_first_two_paragraphs",
-        dest="keep_first_two_paragraphs",
-        action="store_true",
-        default=False,
-        help="keep the first three paragraphs of the original text",
-    )
-    # add arg: only_process_this_file_extension
-    parser.add_argument(
-        "--only_process_this_file_extension",
-        dest="only_process_this_file_extension",
-        type=str,
-        default="",
-        help="only process files with this extension",
-    )
-    parser.add_argument(
-        "--remove_references",
-        dest="remove_references",
-        action="store_true",
-        default=False,
-        help=
-        "remove all paragraphs after 'References' or any other similar keywords found in ignore_strings",
-    )
+    arguments = [
+        ("--input_path", {"type": str, "help": "input file or folder to translate"}),
+        ("--openai_key", {"type": str, "default": "", "help": "OpenAI API key"}),
+        ("--num_threads", {"type": int, "default": 10, "help": "number of threads to use for translation"}),
+        ("--bilingual", {"action": "store_true", "default": False, "help": "output bilingual txt file with original and translated text side by side"}),
+        ("--target_language", {"type": str, "default": "Simplified Chinese", "help": "target language to translate to"}),
+        ("--not_to_translate_people_names", {"action": "store_true", "default": False, "help": "whether or not to translate names in the text"}),
+        ("--not_to_translate_references", {"action": "store_true", "default": False, "help": "not to translate references"}),
+        ("--keep_first_two_paragraphs", {"action": "store_true", "default": False, "help": "keep the first three paragraphs of the original text"}),
+        ("--only_process_this_file_extension", {"type": str, "default": "", "help": "only process files with this extension"}),
+        ("--remove_references", {"action": "store_true", "default": False, "help": "remove all paragraphs after 'References' or any other similar keywords found in ignore_strings"}),
+    ]
+
+    for argument, kwargs in arguments:
+        parser.add_argument(argument, **kwargs)
 
     options = parser.parse_args()
     OPENAI_API_KEY = options.openai_key or os.environ.get("OPENAI_API_KEY")
     if not OPENAI_API_KEY:
         raise Exception("Please provide your OpenAI API key")
     return options
+
 
 
 def check_file_path(file_path: Path, options=None):

@@ -17,21 +17,21 @@ Note: Use absolute paths instead of relative paths to process PDFs.
 git clone https://github.com/Raychanan/ChatGPT-for-Translation.git
 cd ./ChatGPT-for-Translation/
 pip install -r requirements.txt --quiet
-python ChatGPT-translate.py --input_path=input.txt --openai_key=password --target_lang="Chinese"`
+python ChatGPT-translate.py --input_path=input.txt --openai_key=password --target_language="Chinese"
 ```
 
-This command will translate the text in input.txt into Simplified Chinese using ChatGPT. You can also specify any language you want. For example, `--target_lang="Japanese"`. See this txt as an [example](input_translated.txt).
+This command will translate the text in input.txt into Simplified Chinese using ChatGPT. You can also specify any language you want. For example, `--target_language="Japanese"`. See this txt as an [example](input_translated.txt).
 
-这个命令将使用ChatGPT把`input.txt`中的文本翻译成简体中文。你也可以指定任何你想要的语言。例如，`--target_lang="Japanese"`。翻译后的txt文件例子见[这里](input_translated.txt)
+这个命令将使用ChatGPT把`input.txt`中的文本翻译成简体中文。你也可以指定任何你想要的语言。例如，`--target_language="Japanese"`。翻译后的txt文件例子见[这里](input_translated.txt)
 
 ## Translate Folder Files | 翻译文件夹内所有的文本文件
 
-`python ChatGPT-translate.py --input_path=./folder/ --openai_key=password --target_lang="Chinese"`
+`python ChatGPT-translate.py --input_path=./folder/ --openai_key=password --target_language="Chinese"`
 
 
 ## Bilingual Translation Example | 双语翻译例子
 
-`python ChatGPT-translate.py --input_path=input.txt --openai_key=password --target_lang="Japanese"`
+`python ChatGPT-translate.py --input_path=input.txt --openai_key=password --target_language="Japanese"`
 
 
 This command will translate the text in input.txt into Simplified Chinese using ChatGPT, using 20 threads (10 by default) for translation. The output will be a bilingual text file (both txt and Word files will be generated) with the original and translated text side by side. See this txt as an [example](input_bilingual.txt).
@@ -41,7 +41,7 @@ This command will translate the text in input.txt into Simplified Chinese using 
 
 ## Speed up Translation | 加速翻译过程
 
-`python ChatGPT-translate.py --input_path=input.txt --openai_key=password --bilingual --num_threads 20 --target_lang="Traditional Chinese"`
+`python ChatGPT-translate.py --input_path=input.txt --openai_key=password --bilingual --num_threads 20 --target_language="Traditional Chinese"`
 
 ## Prerequisites | 要求
 You need a OpenAI API key (https://beta.openai.com/signup/)
