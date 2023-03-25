@@ -59,4 +59,4 @@ You need a OpenAI API key (https://beta.openai.com/signup/)
 ```
 
 ## Acknowledge 
-PDF parser is based on [scipdf](https://github.com/titipata/scipdf_parser) project on Github
+PDF parser is based on [scipdf](https://github.com/titipata/scipdf_parser) project on Github. Some adjustments were done to allow users to parse PDFs without having to initialzing a server locally.
