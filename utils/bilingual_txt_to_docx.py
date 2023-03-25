@@ -26,7 +26,6 @@ def create_bilingual_docx(txt_file):
 
     paragraphs = remove_empty_paragraphs(paragraphs)
 
-    # paragraphs = remove_empty_paragraphs(paragraphs)
 
     document = Document()
     document.styles['Normal'].font.name = u'宋体'

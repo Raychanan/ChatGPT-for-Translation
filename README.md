@@ -57,3 +57,6 @@ You need a OpenAI API key (https://beta.openai.com/signup/)
 --include_references By default, not to translate references.
 --only_process_this_file_extension For example, set only_process_this_file_extension="txt"
 ```
+
+## Acknowledge 
+PDF parser is based on [scipdf](https://github.com/titipata/scipdf_parser) project on Github

@@ -156,7 +156,6 @@ def translate_text_file(text_filepath_or_url, options):
         with open(output_file, "w") as f:
             f.write(bilingual_text)
             print(f"Bilingual text saved to {f.name}.")
-            create_bilingual_docx(output_file)
 
     else:
         # remove extra newlines
@@ -173,6 +172,7 @@ def translate_text_file(text_filepath_or_url, options):
         with open(output_file, "w", encoding="utf-8") as f:
             f.write(translated_text)
             print(f"Translated text saved to {f.name}.")
+    create_bilingual_docx(output_file)
 
 
 def download_html(url):
