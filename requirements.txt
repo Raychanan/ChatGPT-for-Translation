@@ -5,3 +5,8 @@ nltk==3.8.1
 python-docx
 langdetect
 grobid_tei_xml
+lxml
+spacy
+pandas
+textstat
+beautifulsoup4
