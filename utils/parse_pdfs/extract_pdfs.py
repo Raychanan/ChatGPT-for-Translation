@@ -13,6 +13,9 @@ from pprint import pprint
 import warnings
 from bs4 import GuessedAtParserWarning
 warnings.filterwarnings('ignore', category=GuessedAtParserWarning)
+import re
+import nltk
+nltk.download('punkt')
 
 
 def parse_pdf_from_server(pdf_path):
@@ -80,15 +83,7 @@ def convert_pdf_dict_into_string(pdf_dict):
     return "\n".join(contents)
 
 
-import re
-import nltk
 
-nltk.download('punkt')
-
-import re
-import nltk
-
-nltk.download('punkt')
 
 def split_fist_joined_text(text):
     '''
