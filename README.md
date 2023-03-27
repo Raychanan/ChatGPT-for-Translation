@@ -18,16 +18,16 @@ git clone https://github.com/Raychanan/ChatGPT-for-Translation.git
 cd ./ChatGPT-for-Translation/
 pip install -r requirements.txt --quiet
 
-python ChatGPT-translate.py --input_path=input.txt --openai_key=password --target_language="Chinese"
+python ChatGPT-translate.py --input_path=input.txt --openai_key=password
 ```
 
-This command will translate the text in input.txt into Simplified Chinese using ChatGPT. You can also specify any language you want. For example, `--target_language="Japanese"`. See this txt as an [example](input_translated.txt).
+This command will translate the text in input.txt into simplified Chinese using ChatGPT. You can also specify any language you want. For example, `--target_language="Japanese"`. See this txt as an [example](input_translated.txt).
 
 这个命令将使用ChatGPT把`input.txt`中的文本翻译成简体中文。你也可以指定任何你想要的语言。例如，`--target_language="Japanese"`。翻译后的txt文件例子见[这里](input_translated.txt)
 
 ## Translate Folder Files | 翻译文件夹内所有的文本文件
 
-`python ChatGPT-translate.py --input_path=./folder/ --openai_key=password --target_language="Chinese"`
+`python ChatGPT-translate.py --input_path=./folder/ --openai_key=password
 
 
 ## Bilingual Translation Example | 双语翻译例子
