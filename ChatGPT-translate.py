@@ -4,12 +4,15 @@ import re
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-
+import os
+import concurrent.futures
+from tqdm import tqdm
 import openai
 import requests
 import trafilatura
 from tqdm import tqdm
 from utils.bilingual_txt_to_docx import create_bilingual_docx
+from utils.parse_pdfs.extract_pdfs import process_pdfs
 
 ALLOWED_FILE_TYPES = [
     ".txt",
@@ -92,9 +95,6 @@ def remove_empty_paragraphs(text):
     return '\n'.join(non_empty_paragraphs)
 
 
-import os
-import concurrent.futures
-from tqdm import tqdm
 
 
 def translate_text_file(text_filepath_or_url, options):
@@ -180,7 +180,6 @@ def download_html(url):
     return response.text
 
 
-from utils.parse_pdfs.extract_pdfs import process_pdfs
 
 
 def read_and_preprocess_data(text_filepath_or_url, options):
