@@ -4,3 +4,4 @@ trafilatura==1.4.1
 nltk==3.8.1
 python-docx
 langdetect
+grobid_tei_xml

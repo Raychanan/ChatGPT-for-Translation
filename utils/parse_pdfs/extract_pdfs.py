@@ -1,7 +1,7 @@
 import re
 from tqdm import tqdm
 from bs4 import BeautifulSoup
-# import scipdf
+import scipdf
 import requests
 import grobid_tei_xml
 import concurrent.futures
