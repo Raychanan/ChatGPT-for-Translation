@@ -272,6 +272,7 @@ def check_file_path(file_path: Path, options=None):
     """
     if not file_path.suffix.lower() in ALLOWED_FILE_TYPES and not str(
             file_path).startswith('http'):
+        print(f"File extension {file_path.suffix} is not allowed.")
         raise Exception("Please use a txt file or URL")
 
     if file_path.stem.endswith("_translated") or file_path.stem.endswith(
