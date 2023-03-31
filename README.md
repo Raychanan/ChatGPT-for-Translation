@@ -32,7 +32,7 @@ This command will translate the text in input.txt into simplified Chinese using 
 
 ## Bilingual Translation Example | 双语翻译例子
 
-`python ChatGPT-translate.py --input_path=input.txt --openai_key=password --target_language="Japanese"`
+`python ChatGPT-translate.py --bilingual --input_path=input.txt --openai_key=password --target_language="Japanese"`
 
 
 This command will translate the text in input.txt into Simplified Chinese using ChatGPT, using 20 threads (10 by default) for translation. The output will be a bilingual text file (both txt and Word files will be generated) with the original and translated text side by side. See this txt as an [example](input_bilingual.txt).
