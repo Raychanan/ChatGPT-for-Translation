@@ -1,13 +1,13 @@
+import re
 import os
 import os.path as op
-import re
-import subprocess
-import urllib
 from glob import glob
-
+import urllib
+import subprocess
 import requests
 from bs4 import BeautifulSoup, NavigableString
 from tqdm import tqdm, tqdm_notebook
+
 
 GROBID_URL = "http://localhost:8070"
 DIR_PATH = op.dirname(op.abspath(__file__))
@@ -108,29 +108,6 @@ def parse_pdf(
     if soup and parsed_article is not None:
         parsed_article = BeautifulSoup(parsed_article, "lxml")
     return parsed_article
-
-
-def parse_pdf(
-    pdf_path: str,
-    fulltext: bool = True,
-    soup: bool = False,
-    return_coordinates: bool = True,
-    grobid_url: str = GROBID_URL,
-):
-
-    url = 'https://kermitt2-grobid.hf.space/api/processFulltextDocument'
-
-    with open(pdf_path, 'rb') as file:
-        files = {'input': file}
-        response = requests.post(url, files=files)
-
-    if response.status_code == 200:
-        parsed_article = response.text
-        parsed_article = BeautifulSoup(parsed_article, "lxml")
-        return parsed_article
-    else:
-        print(f"Error: {response.status_code}")
-        return None
 
 
 def parse_authors(article):
