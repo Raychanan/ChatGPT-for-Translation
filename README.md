@@ -1,7 +1,7 @@
 # ChatGPT for Translation | ChatGPT用于翻译
-This is a simple tool that uses ChatGPT to translate text into a specified target language **in a faithful way to the original**. The tool takes a text file (`.txt`, `.md`, `.pdf`, `.html` and `.rtf`) or a folder of text files as input, and outputs a **translated** text file or a **bilingual** text file with the original and translated text side by side. This tool automatically sets multi-threading (to speed up your translation process) by default, considers the frequency limit set by ChatGPT for users, and can be set to translate personal names or not (default is to translate).
+This is a simple tool that uses ChatGPT to translate text into a specified target language **in a faithful way to the original**. The tool takes a text file (`.pdf`, `.txt`, `.md`,  `.html` and `.rtf`) or a folder of text files as input, and outputs a **translated** text file or a **bilingual** text file with the original and translated text side by side. Special optimization has been done especially for academic paper PDF parsing and translation.
 
-使用ChatGPT将文本以**忠于原文的方式**翻译成指定的目标语言。该工具接受一个文本文件（`.txt`, `.md`, `.pdf`, `.html`或`.rtf`）或者一个包含文本的文件夹，并生成一个**直接翻译**后的文本或一个**双语的**(并列显示原始文本和翻译文本)文本。这个工具默认自动设置了多线程(加速你的翻译过程)、自动考虑了ChatGPT给用户设置的频率限制、可以设置是否翻译人名(默认为翻译)。
+使用ChatGPT将文本以**忠于原文的方式**翻译成指定的目标语言。该工具接受一个文本文件（`.pdf`, `.txt`, `.md`, `.html`或`.rtf`）或者一个包含文本的文件夹，并生成一个**直接翻译**后的文本或一个**双语的**(并列显示原始文本和翻译文本)文本。尤其对于学术论文 PDF 解析和翻译做了特别的优化。
 
 Use this on Google Colab (recommended). See [here](https://colab.research.google.com/drive/1_715zHeS3VaZaB9ISyo29Zp-KOTsyP8D#scrollTo=hU-8gsBXAyf0)
 
