@@ -64,7 +64,7 @@ def translate(key, target_language, not_to_translate_people_names, text):
                         "role":
                         "user",
                         "content":
-                        f"Translate the following text into {target_language} in a way that is faithful to the original text. Return only the translation and nothing else:\n{text}",
+                        f"Translate the following text into {target_language} in a way that is faithful to the original text. Retain the original format. Return only the translation and nothing else:\n{text}",
                     }],
                 )
             t_text = (completion["choices"][0].get("message").get(
