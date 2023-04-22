@@ -19,13 +19,19 @@ cd ./ChatGPT-for-Translation/
 pip install -r requirements.txt --quiet
 
 python ChatGPT-translate.py --input_path=input.txt --openai_key=password
-# if you are using Azure OpenAI service instead of platform.openai.com, please use follwing:
-# python ChatGPT-translate.py --input_path=input.txt --use_azure --azure_endpoint=endpoint_uri --azure_deployment_name=deployment_name --openai_key=your_AOAI_key
+
 ```
 
 This command will translate the text in input.txt into simplified Chinese using ChatGPT. You can also specify any language you want. For example, `--target_language="Japanese"`. See this txt as an [example](input_translated.txt).
 
 这个命令将使用ChatGPT把`input.txt`中的文本翻译成简体中文。你也可以指定任何你想要的语言。例如，`--target_language="Japanese"`。翻译后的txt文件例子见[这里](input_translated.txt)
+
+
+```
+# If you are using Azure's OpenAI service, use this:
+python ChatGPT-translate.py --input_path=input.txt --use_azure --azure_endpoint=endpoint_uri --azure_deployment_name=deployment_name --openai_key=your_AOAI_key
+```
+
 
 ## Translate Folder Files | 翻译文件夹内所有的文本文件
 
@@ -35,11 +41,6 @@ This command will translate the text in input.txt into simplified Chinese using 
 ## Bilingual Translation Example | 双语翻译例子
 
 `python ChatGPT-translate.py --bilingual --input_path=input.txt --openai_key=password`
-
-
-This command will translate the text in input.txt into Simplified Chinese using ChatGPT. The output will be a bilingual text file (both txt and Word files will be generated) with the original and translated text side by side. See this txt as an [example](input_bilingual.txt).
-
-这个命令将使用ChatGPT把input.txt中的文本翻译成简体中文，输出结果将是一个双语文本文件(会同时生成txt和Word文档)。双语翻译后的txt文件例子见[这里](input_bilingual.txt)。
 
 ## Prerequisites | 要求
 You need a OpenAI API key (https://beta.openai.com/signup/)
