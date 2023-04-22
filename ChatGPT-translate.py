@@ -21,12 +21,19 @@ ALLOWED_FILE_TYPES = [
     ".html",
     ".pdf",
 ]
+AZURE_API_VERSION = "2023-03-15-preview"
 
 
-def translate(key, target_language, not_to_translate_people_names, text):
+def translate(key, target_language, not_to_translate_people_names, text, use_azure=False, api_base="", deployment_name=""):
     last_request_time = 0
     request_interval = 1  # seconds
     max_backoff_time = 60  # seconds
+
+    # Set up OpenAI API version
+    if use_azure:
+        openai.api_type = "azure"
+        openai.api_version = AZURE_API_VERSION
+        openai.api_base = api_base
 
     # Set up OpenAI API key
     openai.api_key = key
@@ -42,30 +49,35 @@ def translate(key, target_language, not_to_translate_people_names, text):
             last_request_time = time.monotonic()
             # change prompt based on not_to_translate_people_names
             if not_to_translate_people_names:
+                messages=[{
+                    'role': 'system',
+                    'content': 'You are a translator assistant.'
+                }, {
+                    "role":
+                    "user",
+                    "content":
+                    f"Translate the following text into {target_language} in a way that is faithful to the original text. But do not translate people and authors' names and surnames. Do not remove numbers. Return only the translation and nothing else:\n{text}",
+                }]
+            else:
+                messages=[{
+                    'role': 'system',
+                    'content': 'You are a translator assistant.'
+                }, {
+                    "role":
+                    "user",
+                    "content":
+                    f"Translate the following text into {target_language} in a way that is faithful to the original text. Retain the original format. Return only the translation and nothing else:\n{text}",
+                }]
+            if use_azure:
                 completion = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
-                    messages=[{
-                        'role': 'system',
-                        'content': 'You are a translator assistant.'
-                    }, {
-                        "role":
-                        "user",
-                        "content":
-                        f"Translate the following text into {target_language} in a way that is faithful to the original text. But do not translate people and authors' names and surnames. Do not remove numbers. Return only the translation and nothing else:\n{text}",
-                    }],
+                    # No need to specify model since deployment contain that information.
+                    messages=messages,
+                    deployment_id=deployment_name
                 )
             else:
                 completion = openai.ChatCompletion.create(
                     model="gpt-3.5-turbo",
-                    messages=[{
-                        'role': 'system',
-                        'content': 'You are a translator assistant.'
-                    }, {
-                        "role":
-                        "user",
-                        "content":
-                        f"Translate the following text into {target_language} in a way that is faithful to the original text. Retain the original format. Return only the translation and nothing else:\n{text}",
-                    }],
+                    messages=messages,
                 )
             t_text = (completion["choices"][0].get("message").get(
                 "content").encode("utf8").decode())
@@ -132,7 +144,7 @@ def translate_text_file(text_filepath_or_url, options):
             tqdm(executor.map(
                 lambda text:
                 translate(OPENAI_API_KEY, options.target_language, options.
-                          not_to_translate_people_names, text), paragraphs),
+                          not_to_translate_people_names, text, options.use_azure, options.azure_endpoint, options.azure_deployment_name), paragraphs),
                  total=len(paragraphs),
                  desc="Translating paragraphs",
                  unit="paragraph"))
@@ -251,6 +263,11 @@ def parse_arguments():
         ("--keep_first_two_paragraphs", {"action": "store_true", "default": False, "help": "keep the first three paragraphs of the original text"}),
         ("--only_process_this_file_extension", {"type": str, "default": "", "help": "only process files with this extension"}),
         ("--remove_references", {"action": "store_true", "default": False, "help": "remove all paragraphs after 'References' or any other similar keywords found in ignore_strings"}),
+        ("--use_azure", {"action": "store_true", "default": False,"help": "Use Azure OpenAI service instead of OpenAI platform."}),
+        ("--azure_endpoint",
+         {"type": str, "default": "", "help": "Endpoint URL of Azure OpenAI service. Only require when use AOAI."}),
+        ("--azure_deployment_name",
+         {"type": str, "default": "", "help": "Deployment of Azure OpenAI service. Only require when use AOAI."}),
     ]
 
     for argument, kwargs in arguments:
@@ -260,6 +277,9 @@ def parse_arguments():
     OPENAI_API_KEY = options.openai_key or os.environ.get("OPENAI_API_KEY")
     if not OPENAI_API_KEY:
         raise Exception("Please provide your OpenAI API key")
+    if options.use_azure:
+        assert options.azure_endpoint is not None and options.azure_endpoint != '', "--azure_endpoint is required when use Azure"
+        assert options.azure_deployment_name is not None and options.azure_deployment_name, "--azure_deployment_name is required when use Azure"
     return options
 
 
