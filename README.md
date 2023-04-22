@@ -19,6 +19,8 @@ cd ./ChatGPT-for-Translation/
 pip install -r requirements.txt --quiet
 
 python ChatGPT-translate.py --input_path=input.txt --openai_key=password
+# if you are using Azure OpenAI service instead of platform.openai.com, please use follwing:
+# python ChatGPT-translate.py --input_path=input.txt --use_azure --azure_endpoint=endpoint_uri --azure_deployment_name=deployment_name --openai_key=your_AOAI_key
 ```
 
 This command will translate the text in input.txt into simplified Chinese using ChatGPT. You can also specify any language you want. For example, `--target_language="Japanese"`. See this txt as an [example](input_translated.txt).
