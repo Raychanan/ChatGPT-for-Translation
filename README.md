@@ -28,7 +28,7 @@ This command will translate the text in input.txt into simplified Chinese using 
 
 
 ```
-# If you are using Azure's OpenAI service, use this:
+# Azure's OpenAI service, use this:
 python ChatGPT-translate.py --input_path=input.txt --use_azure --azure_endpoint=endpoint_uri --azure_deployment_name=deployment_name --openai_key=your_AOAI_key
 ```
 
