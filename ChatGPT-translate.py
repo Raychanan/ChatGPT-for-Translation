@@ -70,7 +70,7 @@ def translate(key, target_language, not_to_translate_people_names, text, use_azu
                 }]
             if use_azure:
                 completion = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
+                    # No need to specify model since deployment contain that information.
                     messages=messages,
                     deployment_id=deployment_name
                 )
