@@ -3,6 +3,10 @@ This is a simple tool that uses ChatGPT to translate text into a specified targe
 
 使用ChatGPT将文本以**忠于原文的方式**翻译成指定的目标语言。该工具接受一个文本文件（`.pdf`, `.txt`, `.md`, `.html`或`.rtf`）或者一个包含文本的文件夹，并生成一个**直接翻译**后的文本或一个**双语的**(并列显示原始文本和翻译文本)文本。尤其对于学术论文 PDF 解析和翻译做了特别的优化。
 
+```
+export OPENAI_API_BASE="https://api.openai.com/v1"
+```
+
 Use this on Google Colab (recommended). See [here](https://colab.research.google.com/drive/1_715zHeS3VaZaB9ISyo29Zp-KOTsyP8D#scrollTo=hU-8gsBXAyf0)
 
 Google Colab上使用这个工具(推荐)。见[这里](https://colab.research.google.com/drive/1_715zHeS3VaZaB9ISyo29Zp-KOTsyP8D#scrollTo=hU-8gsBXAyf0)
