@@ -29,6 +29,8 @@ def translate(key, target_language, not_to_translate_people_names, text,use_chat
     request_interval = 1  # seconds
     max_backoff_time = 60  # seconds
 
+    api_base = api_base or os.environ.get("OPENAI_API_BASE")
+
     if use_chatglm:
         openai.api_base = api_base
 
