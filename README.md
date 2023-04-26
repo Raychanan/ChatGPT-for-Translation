@@ -1,7 +1,9 @@
-# ChatGPT for Translation | ChatGPT用于翻译
+# ChatGLM for Translation | ChatGLM用于翻译
 This is a simple tool that uses ChatGPT to translate text into a specified target language **in a faithful way to the original**. The tool takes a text file (`.pdf`, `.txt`, `.md`,  `.html` and `.rtf`) or a folder of text files as input, and outputs a **translated** text file or a **bilingual** text file with the original and translated text side by side. Special optimization has been done especially for academic paper PDF parsing and translation.
 
 使用ChatGPT将文本以**忠于原文的方式**翻译成指定的目标语言。该工具接受一个文本文件（`.pdf`, `.txt`, `.md`, `.html`或`.rtf`）或者一个包含文本的文件夹，并生成一个**直接翻译**后的文本或一个**双语的**(并列显示原始文本和翻译文本)文本。尤其对于学术论文 PDF 解析和翻译做了特别的优化。
+
+使用[chatglm-openai-api](https://github.com/ninehills/chatglm-openai-api)部署本地ChatGLM API
 
 ```
 export OPENAI_API_BASE="http://localhost:8000/v1"
@@ -22,7 +24,15 @@ git clone https://github.com/Raychanan/ChatGPT-for-Translation.git
 cd ./ChatGPT-for-Translation/
 pip install -r requirements.txt --quiet
 
+# for windows
+spacy download en
+
+
+
 python ChatGPT-translate.py --input_path=input.txt --openai_key=password
+
+# chatglm
+python .\ChatGPT-translate.py --input_path=input.txt --use_chatglm --endpoint=http://localhost:8000/v1 --opeanai_key="token1"
 
 ```
 
@@ -50,6 +60,7 @@ python ChatGPT-translate.py --input_path=input.txt --use_azure --azure_endpoint=
 You need a OpenAI API key (https://beta.openai.com/signup/)
 
 你需要一个OpenAI的API密钥（https://beta.openai.com/signup/）
+或部署了[chatglm-openai-api](https://github.com/ninehills/chatglm-openai-api)
 
 
 ## Arguments | 可用参数

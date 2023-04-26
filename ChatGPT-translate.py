@@ -24,10 +24,14 @@ ALLOWED_FILE_TYPES = [
 AZURE_API_VERSION = "2023-03-15-preview"
 
 
-def translate(key, target_language, not_to_translate_people_names, text, use_azure=False, api_base="", deployment_name=""):
+def translate(key, target_language, not_to_translate_people_names, text,use_chatglm=False, use_azure=False, api_base="", deployment_name=""):
     last_request_time = 0
     request_interval = 1  # seconds
     max_backoff_time = 60  # seconds
+
+    if use_chatglm:
+        openai.api_base = api_base
+
 
     # Set up OpenAI API version
     if use_azure:
@@ -144,7 +148,7 @@ def translate_text_file(text_filepath_or_url, options):
             tqdm(executor.map(
                 lambda text:
                 translate(OPENAI_API_KEY, options.target_language, options.
-                          not_to_translate_people_names, text, options.use_azure, options.azure_endpoint, options.azure_deployment_name), paragraphs),
+                          not_to_translate_people_names, text,options.use_chatglm, options.use_azure, options.endpoint, options.azure_deployment_name), paragraphs),
                  total=len(paragraphs),
                  desc="Translating paragraphs",
                  unit="paragraph"))
@@ -264,8 +268,10 @@ def parse_arguments():
         ("--only_process_this_file_extension", {"type": str, "default": "", "help": "only process files with this extension"}),
         ("--remove_references", {"action": "store_true", "default": False, "help": "remove all paragraphs after 'References' or any other similar keywords found in ignore_strings"}),
         ("--use_azure", {"action": "store_true", "default": False,"help": "Use Azure OpenAI service instead of OpenAI platform."}),
-        ("--azure_endpoint",
-         {"type": str, "default": "", "help": "Endpoint URL of Azure OpenAI service. Only require when use AOAI."}),
+        ("--use_chatglm",
+         {"action": "store_true", "default": False, "help": "Use ChatGLM  service instead of OpenAI platform."}),
+        ("--endpoint",
+         {"type": str, "default": "", "help": "Endpoint URL of Azure OpenAI service"}),
         ("--azure_deployment_name",
          {"type": str, "default": "", "help": "Deployment of Azure OpenAI service. Only require when use AOAI."}),
     ]
@@ -275,10 +281,12 @@ def parse_arguments():
 
     options = parser.parse_args()
     OPENAI_API_KEY = options.openai_key or os.environ.get("OPENAI_API_KEY")
-    if not OPENAI_API_KEY:
+    if not OPENAI_API_KEY and not options.use_chatglm:
         raise Exception("Please provide your OpenAI API key")
+
+    
     if options.use_azure:
-        assert options.azure_endpoint is not None and options.azure_endpoint != '', "--azure_endpoint is required when use Azure"
+        assert options.endpoint is not None and options.endpoint != '', "--endpoint is required when use Azure"
         assert options.azure_deployment_name is not None and options.azure_deployment_name, "--azure_deployment_name is required when use Azure"
     return options
 
