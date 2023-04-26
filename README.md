@@ -7,10 +7,6 @@ Use this on Google Colab (recommended). See [here](https://colab.research.google
 
 Google Colab上使用这个工具(推荐)。见[这里](https://colab.research.google.com/drive/1_715zHeS3VaZaB9ISyo29Zp-KOTsyP8D#scrollTo=hU-8gsBXAyf0)
 
-Note: Use absolute paths instead of relative paths to process PDFs.
-
-注意：处理 PDF 的时候使用绝对路径而不是相对路径。
-
 ## Simple Example | 简单例子
 
 ```
