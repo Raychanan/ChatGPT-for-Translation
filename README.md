@@ -73,9 +73,7 @@ You need a OpenAI API key (https://beta.openai.com/signup/)
 ```
 --num_threads: The number of threads to use for translation (default: 5).
 --only_process_this_file_extension For example, set only_process_this_file_extension="txt"
---not_to_translate_people_names Whether or not to translate names in the text. This can be useful if you are translating academic texts. By default, names will be translated.
 --not_to_translate_references By default, not to translate references.
---keep_first_two_paragraphs Keep the first three paragraphs of the original text. By default, false.
 ```
 
 ## Acknowledge 
