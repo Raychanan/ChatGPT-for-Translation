@@ -24,7 +24,7 @@ ALLOWED_FILE_TYPES = [
 AZURE_API_VERSION = "2023-03-15-preview"
 
 
-def translate(key, target_language, not_to_translate_people_names, text, use_azure=False, api_base="", deployment_name=""):
+def translate(key, target_language, text, use_azure=False, api_base="", deployment_name=""):
     last_request_time = 0
     request_interval = 1  # seconds
     max_backoff_time = 60  # seconds
@@ -133,8 +133,7 @@ def translate_text_file(text_filepath_or_url, options):
         translated_paragraphs = list(
             tqdm(executor.map(
                 lambda text:
-                translate(OPENAI_API_KEY, options.target_language, options.
-                          not_to_translate_people_names, text, options.use_azure, options.azure_endpoint, options.azure_deployment_name), paragraphs),
+                translate(OPENAI_API_KEY, options.target_language, text, options.use_azure, options.azure_endpoint, options.azure_deployment_name), paragraphs),
                  total=len(paragraphs),
                  desc="Translating paragraphs",
                  unit="paragraph"))
