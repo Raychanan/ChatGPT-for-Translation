@@ -47,27 +47,17 @@ def translate(key, target_language, not_to_translate_people_names, text, use_azu
             if elapsed_time < request_interval:
                 time.sleep(request_interval - elapsed_time)
             last_request_time = time.monotonic()
-            # change prompt based on not_to_translate_people_names
-            if not_to_translate_people_names:
-                messages=[{
-                    'role': 'system',
-                    'content': 'You are a translator assistant.'
-                }, {
-                    "role":
-                    "user",
-                    "content":
-                    f"Translate the following text into {target_language} in a way that is faithful to the original text. But do not translate people and authors' names and surnames. Do not remove numbers. Return only the translation and nothing else:\n{text}",
-                }]
-            else:
-                messages=[{
-                    'role': 'system',
-                    'content': 'You are a translator assistant.'
-                }, {
-                    "role":
-                    "user",
-                    "content":
-                    f"Translate the following text into {target_language} in a way that is faithful to the original text. Retain the original format. Return only the translation and nothing else:\n{text}",
-                }]
+
+            # Set up the prompt
+            messages=[{
+                'role': 'system',
+                'content': 'You are a translator assistant.'
+            }, {
+                "role":
+                "user",
+                "content":
+                f"Translate the following text into {target_language} in a way that is faithful to the original text. Retain the original format. Return only the translation and nothing else:\n{text}",
+            }]
             if use_azure:
                 completion = openai.ChatCompletion.create(
                     # No need to specify model since deployment contain that information.
@@ -117,7 +107,7 @@ def translate_text_file(text_filepath_or_url, options):
     # keep first three paragraphs
     first_three_paragraphs = paragraphs[:2]
 
-    # if users require to ignore References, we then take out all paragraphs after the one starting with "References"
+    # if users require to ignore References, we then take out all paragraphs after the one starting with "References" related keywords
     if options.not_to_translate_references:
         ignore_strings = [
             "Acknowledgment", "Notes", "NOTES", "disclosure statement",
@@ -156,10 +146,7 @@ def translate_text_file(text_filepath_or_url, options):
         bilingual_text = "\n".join(f"{paragraph}\n{translation}"
                                    for paragraph, translation in zip(
                                        paragraphs, translated_paragraphs))
-        # add first three paragraphs if required
-        if options.keep_first_two_paragraphs:
-            bilingual_text = "\n".join(
-                first_three_paragraphs) + "\n" + bilingual_text
+
         # append References
         if options.not_to_translate_references:
             bilingual_text += "\n".join(ref_paragraphs)
@@ -172,10 +159,7 @@ def translate_text_file(text_filepath_or_url, options):
     else:
         # remove extra newlines
         translated_text = re.sub(r"\n{2,}", "\n", translated_text)
-        # add first three paragraphs if required
-        if options.keep_first_two_paragraphs:
-            translated_text = "\n".join(
-                first_three_paragraphs) + "\n" + translated_text
+
         # append References
         if options.not_to_translate_references:
             translated_text += "\n" + "\n".join(ref_paragraphs)
@@ -258,9 +242,7 @@ def parse_arguments():
         ("--num_threads", {"type": int, "default": 10, "help": "number of threads to use for translation"}),
         ("--bilingual", {"action": "store_true", "default": False, "help": "output bilingual txt file with original and translated text side by side"}),
         ("--target_language", {"type": str, "default": "Simplified Chinese", "help": "target language to translate to"}),
-        ("--not_to_translate_people_names", {"action": "store_true", "default": False, "help": "whether or not to translate names in the text"}),
         ("--not_to_translate_references", {"action": "store_true", "default": False, "help": "not to translate references"}),
-        ("--keep_first_two_paragraphs", {"action": "store_true", "default": False, "help": "keep the first three paragraphs of the original text"}),
         ("--only_process_this_file_extension", {"type": str, "default": "", "help": "only process files with this extension"}),
         ("--remove_references", {"action": "store_true", "default": False, "help": "remove all paragraphs after 'References' or any other similar keywords found in ignore_strings"}),
         ("--use_azure", {"action": "store_true", "default": False,"help": "Use Azure OpenAI service instead of OpenAI platform."}),
