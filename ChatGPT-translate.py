@@ -283,15 +283,18 @@ def parse_arguments():
 
     options = parser.parse_args()
     OPENAI_API_KEY = options.openai_key or os.environ.get("OPENAI_API_KEY")
-    if not OPENAI_API_KEY and not options.use_chatglm:
+    if not OPENAI_API_KEY:
         raise Exception("Please provide your OpenAI API key")
 
-    
+    OPENAI_API_BASE = options.endpoint or os.environ.get("OPENAI_API_BASE")
+
+    if options.use_chatglm:
+        assert OPENAI_API_BASE is not None and OPENAI_API_BASE != '', "--endpoint is required when use ChatGLM"
+
     if options.use_azure:
         assert options.endpoint is not None and options.endpoint != '', "--endpoint is required when use Azure"
         assert options.azure_deployment_name is not None and options.azure_deployment_name, "--azure_deployment_name is required when use Azure"
     return options
-
 
 
 def check_file_path(file_path: Path, options=None):

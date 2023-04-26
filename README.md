@@ -30,7 +30,7 @@ git clone https://github.com/Raychanan/ChatGPT-for-Translation.git
 cd ./ChatGPT-for-Translation/
 pip install -r requirements.txt --quiet
 
-# for windows
+# for windows/mac
 spacy download en
 
 
@@ -38,7 +38,7 @@ spacy download en
 python ChatGPT-translate.py --input_path=input.txt --openai_key=password
 
 # chatglm
-python .\ChatGPT-translate.py --input_path=input.txt --use_chatglm --endpoint=http://localhost:8000/v1 --opeanai_key="token1"
+python .\ChatGPT-translate.py --input_path=input.txt --use_chatglm --endpoint=http://localhost:8000/v1 --openai_key="token1" --num_threads=1
 
 ```
 
