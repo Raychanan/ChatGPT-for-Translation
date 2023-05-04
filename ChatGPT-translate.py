@@ -24,7 +24,8 @@ ALLOWED_FILE_TYPES = [
 AZURE_API_VERSION = "2023-03-15-preview"
 
 
-def translate(key, target_language, text, use_azure=False, api_base="", deployment_name=""):
+def translate(key, target_language, text, use_azure=False, api_base="", deployment_name="", options=None):
+
     last_request_time = 0
     request_interval = 1  # seconds
     max_backoff_time = 60  # seconds
@@ -49,7 +50,7 @@ def translate(key, target_language, text, use_azure=False, api_base="", deployme
             last_request_time = time.monotonic()
 
             # Set up the prompt
-            messages=[{
+            messages = [{
                 'role': 'system',
                 'content': 'You are a translator assistant.'
             }, {
@@ -66,9 +67,10 @@ def translate(key, target_language, text, use_azure=False, api_base="", deployme
                 )
             else:
                 completion = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
+                    model=options.model,
                     messages=messages,
                 )
+
             t_text = (completion["choices"][0].get("message").get(
                 "content").encode("utf8").decode())
             break
@@ -95,8 +97,6 @@ def remove_empty_paragraphs(text):
 
     # Join the non-empty paragraphs back into a string
     return '\n'.join(non_empty_paragraphs)
-
-
 
 
 def translate_text_file(text_filepath_or_url, options):
@@ -133,10 +133,10 @@ def translate_text_file(text_filepath_or_url, options):
         translated_paragraphs = list(
             tqdm(executor.map(
                 lambda text:
-                translate(OPENAI_API_KEY, options.target_language, text, options.use_azure, options.azure_endpoint, options.azure_deployment_name), paragraphs),
-                 total=len(paragraphs),
-                 desc="Translating paragraphs",
-                 unit="paragraph"))
+                translate(OPENAI_API_KEY, options.target_language, text, options.use_azure, options.azure_endpoint, options.azure_deployment_name, options=options), paragraphs),
+                total=len(paragraphs),
+                desc="Translating paragraphs",
+                unit="paragraph"))
         translated_paragraphs = [p.strip() for p in translated_paragraphs]
 
     translated_text = "\n".join(translated_paragraphs)
@@ -173,8 +173,6 @@ def translate_text_file(text_filepath_or_url, options):
 def download_html(url):
     response = requests.get(url)
     return response.text
-
-
 
 
 def read_and_preprocess_data(text_filepath_or_url, options):
@@ -236,15 +234,26 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
 
     arguments = [
-        ("--input_path", {"type": str, "help": "input file or folder to translate"}),
-        ("--openai_key", {"type": str, "default": "", "help": "OpenAI API key"}),
-        ("--num_threads", {"type": int, "default": 10, "help": "number of threads to use for translation"}),
-        ("--bilingual", {"action": "store_true", "default": False, "help": "output bilingual txt file with original and translated text side by side"}),
-        ("--target_language", {"type": str, "default": "Simplified Chinese", "help": "target language to translate to"}),
-        ("--not_to_translate_references", {"action": "store_true", "default": False, "help": "not to translate references"}),
-        ("--only_process_this_file_extension", {"type": str, "default": "", "help": "only process files with this extension"}),
-        ("--remove_references", {"action": "store_true", "default": False, "help": "remove all paragraphs after 'References' or any other similar keywords found in ignore_strings"}),
-        ("--use_azure", {"action": "store_true", "default": False,"help": "Use Azure OpenAI service instead of OpenAI platform."}),
+        ("--input_path", {"type": str,
+         "help": "input file or folder to translate"}),
+        ("--openai_key", {"type": str,
+         "default": "", "help": "OpenAI API key"}),
+        ("--model", {"type": str, "default": "gpt-3.5-turbo",
+         "help": "Model to use for translation, e.g., 'gpt-3.5-turbo' or 'gpt-4'"}),
+        ("--num_threads", {"type": int, "default": 10,
+         "help": "number of threads to use for translation"}),
+        ("--bilingual", {"action": "store_true", "default": False,
+         "help": "output bilingual txt file with original and translated text side by side"}),
+        ("--target_language", {"type": str, "default": "Simplified Chinese",
+         "help": "target language to translate to"}),
+        ("--not_to_translate_references",
+         {"action": "store_true", "default": False, "help": "not to translate references"}),
+        ("--only_process_this_file_extension",
+         {"type": str, "default": "", "help": "only process files with this extension"}),
+        ("--remove_references", {"action": "store_true", "default": False,
+         "help": "remove all paragraphs after 'References' or any other similar keywords found in ignore_strings"}),
+        ("--use_azure", {"action": "store_true", "default": False,
+         "help": "Use Azure OpenAI service instead of OpenAI platform."}),
         ("--azure_endpoint",
          {"type": str, "default": "", "help": "Endpoint URL of Azure OpenAI service. Only require when use AOAI."}),
         ("--azure_deployment_name",
@@ -262,7 +271,6 @@ def parse_arguments():
         assert options.azure_endpoint is not None and options.azure_endpoint != '', "--azure_endpoint is required when use Azure"
         assert options.azure_deployment_name is not None and options.azure_deployment_name, "--azure_deployment_name is required when use Azure"
     return options
-
 
 
 def check_file_path(file_path: Path, options=None):
