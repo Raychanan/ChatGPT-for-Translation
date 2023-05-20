@@ -24,12 +24,15 @@ ALLOWED_FILE_TYPES = [
 AZURE_API_VERSION = "2023-03-15-preview"
 
 
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_random_exponential,
+)  # for exponential backoff
+
+
+@retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
 def translate(key, target_language, text, use_azure=False, api_base="", deployment_name="", options=None):
-
-    last_request_time = 0
-    request_interval = 1  # seconds
-    max_backoff_time = 60  # seconds
-
     # Set up OpenAI API version
     if use_azure:
         openai.api_type = "azure"
@@ -41,50 +44,34 @@ def translate(key, target_language, text, use_azure=False, api_base="", deployme
     if not text:
         return ""
     # lang
-    while True:
-        try:
-            # Check if enough time has passed since the last request
-            elapsed_time = time.monotonic() - last_request_time
-            if elapsed_time < request_interval:
-                time.sleep(request_interval - elapsed_time)
-            last_request_time = time.monotonic()
 
-            # Set up the prompt
-            messages = [{
-                'role': 'system',
-                'content': 'You are a translator assistant.'
-            }, {
-                "role":
-                "user",
-                "content":
-                f"Translate the following text into {target_language} in a way that is faithful to the original text. Retain the original format. Return only the translation and nothing else:\n{text}",
-            }]
-            if use_azure:
-                completion = openai.ChatCompletion.create(
-                    # No need to specify model since deployment contain that information.
-                    messages=messages,
-                    deployment_id=deployment_name
-                )
-            else:
-                completion = openai.ChatCompletion.create(
-                    model=options.model,
-                    messages=messages,
-                )
+    # Set up the prompt
+    messages = [{
+        'role': 'system',
+        'content': 'You are a translator assistant.'
+    }, {
+        "role":
+        "user",
+        "content":
+        f"Translate the following text into {target_language} in a way that is faithful to the original text. Retain the original format. Return only the translation and nothing else:\n{text}",
+    }]
+    if use_azure:
+        completion = openai.ChatCompletion.create(
+            # No need to specify model since deployment contain that information.
+            messages=messages,
+            deployment_id=deployment_name
+        )
+    else:
+        completion = openai.ChatCompletion.create(
+            model=options.model,
+            messages=messages,
+        )
 
-            t_text = (completion["choices"][0].get("message").get(
-                "content").encode("utf8").decode())
-            break
-        except Exception as e:
-            print(str(e))
-            # Exponential backoff if rate limit is hit
-            request_interval *= 2
-            if request_interval > max_backoff_time:
-                request_interval = max_backoff_time
-            print(f"Rate limit hit. Sleeping for {request_interval} seconds.")
-            time.sleep(request_interval)
-            continue
+    t_text = (completion["choices"][0].get("message").get(
+        "content").encode("utf8").decode())
 
     return t_text
+
 
 
 def remove_empty_paragraphs(text):
