@@ -141,33 +141,33 @@ def translate_text_file(text_filepath_or_url, options):
 
     translated_text = "\n".join(translated_paragraphs)
 
-    if options.bilingual:
-        bilingual_text = "\n".join(f"{paragraph}\n{translation}"
-                                   for paragraph, translation in zip(
-                                       paragraphs, translated_paragraphs))
+    # Output bilingual text file
+    bilingual_text = "\n".join(f"{paragraph}\n{translation}"
+                               for paragraph, translation in zip(
+                                   paragraphs, translated_paragraphs))
+    # append References
+    if options.not_to_translate_references:
+        bilingual_text += "\n".join(ref_paragraphs)
+    bilingual_text = remove_empty_paragraphs(bilingual_text)
+    output_file_bilingual = f"{Path(text_filepath_or_url).parent}/{Path(text_filepath_or_url).stem}_bilingual.txt"
+    with open(output_file_bilingual, "w") as f:
+        f.write(bilingual_text)
+        print(f"Bilingual text saved to {f.name}.")
+    create_bilingual_docx(output_file_bilingual)
 
-        # append References
-        if options.not_to_translate_references:
-            bilingual_text += "\n".join(ref_paragraphs)
-        bilingual_text = remove_empty_paragraphs(bilingual_text)
-        output_file = f"{Path(text_filepath_or_url).parent}/{Path(text_filepath_or_url).stem}_bilingual.txt"
-        with open(output_file, "w") as f:
-            f.write(bilingual_text)
-            print(f"Bilingual text saved to {f.name}.")
+    # Output translated text file
+    # remove extra newlines
+    translated_text = re.sub(r"\n{2,}", "\n", translated_text)
 
-    else:
-        # remove extra newlines
-        translated_text = re.sub(r"\n{2,}", "\n", translated_text)
-
-        # append References
-        if options.not_to_translate_references:
-            translated_text += "\n" + "\n".join(ref_paragraphs)
-        translated_text = remove_empty_paragraphs(translated_text)
-        output_file = f"{Path(text_filepath_or_url).parent}/{Path(text_filepath_or_url).stem}_translated.txt"
-        with open(output_file, "w", encoding="utf-8") as f:
-            f.write(translated_text)
-            print(f"Translated text saved to {f.name}.")
-    create_bilingual_docx(output_file)
+    # append References
+    if options.not_to_translate_references:
+        translated_text += "\n" + "\n".join(ref_paragraphs)
+    translated_text = remove_empty_paragraphs(translated_text)
+    output_file_translated = f"{Path(text_filepath_or_url).parent}/{Path(text_filepath_or_url).stem}_translated.txt"
+    with open(output_file_translated, "w", encoding="utf-8") as f:
+        f.write(translated_text)
+        print(f"Translated text saved to {f.name}.")
+    create_bilingual_docx(output_file_translated)
 
 
 def download_html(url):
@@ -242,8 +242,6 @@ def parse_arguments():
          "help": "Model to use for translation, e.g., 'gpt-3.5-turbo' or 'gpt-4'"}),
         ("--num_threads", {"type": int, "default": 10,
          "help": "number of threads to use for translation"}),
-        ("--bilingual", {"action": "store_true", "default": False,
-         "help": "output bilingual txt file with original and translated text side by side"}),
         ("--target_language", {"type": str, "default": "Simplified Chinese",
          "help": "target language to translate to"}),
         ("--not_to_translate_references",
