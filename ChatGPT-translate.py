@@ -206,7 +206,7 @@ def parse_arguments():
     return options
 
 
-def check_file_path(file_path: Path, options=None):
+def check_file_path(file_path: Path):
     """
     Ensure file extension is in ALLOWED_FILE_TYPES or is a URL.
     If file ends with _translated.txt or _bilingual.txt, skip it.
@@ -229,24 +229,18 @@ def check_file_path(file_path: Path, options=None):
         return False
 
     if (file_path.with_name(f"{file_path.stem}_translated.txt").exists() or
-            file_path.with_name(f"{file_path.stem}_extracted_translated.txt").
-            exists()) and not getattr(options, 'bilingual', False):
+            file_path.with_name(f"{file_path.stem}_extracted_translated.txt").exists()):
         print(
             f"You already have a translated file for {file_path}, skipping...")
-        return False
-    elif (file_path.with_name(f"{file_path.stem}_bilingual.txt").exists()
-          or file_path.with_name(f"{file_path.stem}_extracted_bilingual.txt").
-          exists()) and getattr(options, 'bilingual', False):
-        print(
-            f"You already have a bilingual file for {file_path}, skipping...")
         return False
 
     return True
 
 
+
 def process_file(file_path, options):
     """Translate a single text file"""
-    if not check_file_path(file_path, options):
+    if not check_file_path(file_path):
         return
     print(f"Translating {file_path}...")
     translate_text_file(str(file_path), options)
