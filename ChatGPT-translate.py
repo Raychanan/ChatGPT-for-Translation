@@ -13,6 +13,11 @@ import trafilatura
 from tqdm import tqdm
 from utils.bilingual_txt_to_docx import create_bilingual_docx
 from utils.parse_pdfs.extract_pdfs import process_pdfs
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_random_exponential,
+)  # for exponential backoff
 
 ALLOWED_FILE_TYPES = [
     ".txt",
@@ -24,11 +29,6 @@ ALLOWED_FILE_TYPES = [
 AZURE_API_VERSION = "2023-03-15-preview"
 
 
-from tenacity import (
-    retry,
-    stop_after_attempt,
-    wait_random_exponential,
-)  # for exponential backoff
 
 
 @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
@@ -91,31 +91,6 @@ def translate_text_file(text_filepath_or_url, options):
 
     paragraphs = read_and_preprocess_data(text_filepath_or_url, options)
 
-    # keep first three paragraphs
-    first_three_paragraphs = paragraphs[:2]
-
-    # if users require to ignore References, we then take out all paragraphs after the one starting with "References" related keywords
-    if options.not_to_translate_references:
-        ignore_strings = [
-            "Acknowledgment", "Notes", "NOTES", "disclosure statement",
-            "References", "Funding", "declaration of conflicting interest",
-            "acknowledgment", "supplementary material", "Acknowledgements"
-        ]
-        ignore_indices = []
-        for i, p in enumerate(paragraphs):
-            for ignore_str in ignore_strings:
-                if (p.startswith(ignore_str) or p.lower().startswith(
-                        ignore_str.lower())) and len(p) < 30:
-                    ignore_indices.append(i)
-                    break
-        if ignore_indices:
-            print("References will not be translated.")
-            ref_paragraphs = paragraphs[min(ignore_indices):]
-            paragraphs = paragraphs[:min(ignore_indices)]
-        else:
-            print(paragraphs[-3:])
-            raise Exception("No References found.")
-
     with ThreadPoolExecutor(max_workers=options.num_threads) as executor:
         translated_paragraphs = list(
             tqdm(executor.map(
@@ -132,9 +107,7 @@ def translate_text_file(text_filepath_or_url, options):
     bilingual_text = "\n".join(f"{paragraph}\n{translation}"
                                for paragraph, translation in zip(
                                    paragraphs, translated_paragraphs))
-    # append References
-    if options.not_to_translate_references:
-        bilingual_text += "\n".join(ref_paragraphs)
+
     bilingual_text = remove_empty_paragraphs(bilingual_text)
     output_file_bilingual = f"{Path(text_filepath_or_url).parent}/{Path(text_filepath_or_url).stem}_bilingual.txt"
     with open(output_file_bilingual, "w") as f:
@@ -146,9 +119,6 @@ def translate_text_file(text_filepath_or_url, options):
     # remove extra newlines
     translated_text = re.sub(r"\n{2,}", "\n", translated_text)
 
-    # append References
-    if options.not_to_translate_references:
-        translated_text += "\n" + "\n".join(ref_paragraphs)
     translated_text = remove_empty_paragraphs(translated_text)
     output_file_translated = f"{Path(text_filepath_or_url).parent}/{Path(text_filepath_or_url).stem}_translated.txt"
     with open(output_file_translated, "w", encoding="utf-8") as f:
@@ -195,24 +165,6 @@ def read_and_preprocess_data(text_filepath_or_url, options):
                     print(f"Extracted text saved to {f.name}.")
     paragraphs = [p.strip() for p in text.split("\n") if p.strip() != ""]
 
-    # Remove paragraphs after "References" or other keywords in ignore_strings
-    if options.remove_references:
-        ignore_strings = [
-            "Acknowledgment", "Acknowledgments", "Notes", "NOTES",
-            "disclosure statement", "References", "Funding",
-            "declaration of conflicting interest", "acknowledgment",
-            "supplementary material", "Acknowledgements"
-        ]
-        for i, p in enumerate(paragraphs):
-            for ignore_str in ignore_strings:
-                if (p.startswith(ignore_str) or p.lower().startswith(
-                        ignore_str.lower())) and len(p) < 30:
-                    paragraphs = paragraphs[:i]
-                    break
-            else:
-                continue
-            break
-
     return paragraphs
 
 
@@ -231,12 +183,8 @@ def parse_arguments():
          "help": "number of threads to use for translation"}),
         ("--target_language", {"type": str, "default": "Simplified Chinese",
          "help": "target language to translate to"}),
-        ("--not_to_translate_references",
-         {"action": "store_true", "default": False, "help": "not to translate references"}),
         ("--only_process_this_file_extension",
          {"type": str, "default": "", "help": "only process files with this extension"}),
-        ("--remove_references", {"action": "store_true", "default": False,
-         "help": "remove all paragraphs after 'References' or any other similar keywords found in ignore_strings"}),
         ("--use_azure", {"action": "store_true", "default": False,
          "help": "Use Azure OpenAI service instead of OpenAI platform."}),
         ("--azure_endpoint",
