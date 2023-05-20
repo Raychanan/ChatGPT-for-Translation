@@ -62,7 +62,7 @@ def convert_pdf_dict_into_string(pdf_dict):
     title = pdf_dict["title"]
     authors = pdf_dict["authors"]
     pub_date = pdf_dict["pub_date"]
-    abstract = "Abstract\n" + pdf_dict["abstract"]
+    abstract = pdf_dict["abstract"]
     contents.extend([title, authors, pub_date, abstract])
 
     for section in pdf_dict['sections']:
