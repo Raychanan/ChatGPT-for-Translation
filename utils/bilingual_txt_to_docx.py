@@ -8,7 +8,7 @@ from docx.oxml.ns import qn
 def is_chinese(text):
     try:
         detected_lang = detect(text)
-        return detected_lang == 'zh-cn' or detected_lang == 'zh-tw'
+        return detected_lang != 'en'
     except:
         return False
 

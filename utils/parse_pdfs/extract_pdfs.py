@@ -158,6 +158,8 @@ def process_pdfs(input_path, parser='scipdf'):
     elif input_path.is_dir():
         pdf_filepaths = list(input_path.glob('*.pdf'))
     else:
+        print(input_path.is_file())
+        print(input_path.suffix)
         raise ValueError(
             "Invalid input path. Must be a PDF file or a directory containing PDF files.")
 
