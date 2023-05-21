@@ -2,7 +2,15 @@ import os
 import regex
 import requests
 from lxml import etree
-from io import StringIO
+
+def save_xml_to_file(pdf_path, xml_source):
+    base_path = os.path.splitext(pdf_path)[0] # strip the extension from the file path
+    xml_file_path = f"{base_path}.tei.xml" # append the custom extension
+
+    with open(xml_file_path, 'w', encoding='utf-8') as xml_file:
+        xml_file.write(xml_source)
+
+    print(f"XML source saved to {xml_file_path}")
 
 def parse_pdf_from_server(pdf_path):
     url = 'https://kermitt2-grobid.hf.space/api/processFulltextDocument'
@@ -13,11 +21,12 @@ def parse_pdf_from_server(pdf_path):
 
     if response.status_code == 200:
         xml_source = response.text
+        # save_xml_to_file(pdf_path, xml_source)
         return xml_source
     else:
         print(f"Error: {response.status_code}")
         return None
-
+    
 def extract_paper_info(pdf_path):
     xml_source = parse_pdf_from_server(pdf_path)
     if xml_source is None:
@@ -36,11 +45,11 @@ def extract_paper_info(pdf_path):
     with open(output_file_path, 'w') as output_file:
         output_file.write("Title(s):\n")
         for title in titles:
-            output_file.write(f"{title.text}")
+            output_file.write(f"{title.text}\n")
 
         output_file.write("\nAbstract:\n")
-        for abs in abstract:
-            output_file.write(f"{etree.tostring(abs, method='text', encoding='unicode')}\n")
+        for abs_part in abstract:
+            output_file.write(f"{etree.tostring(abs_part, method='text', encoding='unicode')}\n")
 
         for div in divs:
             heading = div.xpath("tei:head", namespaces=ns)
@@ -70,5 +79,6 @@ def extract_paper_info(pdf_path):
     print(f"Extraction completed, results saved in {output_file_path}")
 
 
-# print(parse_pdf_from_server("Gratitude.pdf"))
-# extract_paper_info("Gratitude.pdf")
+pdf_path = "/Users/raychan/Downloads/GitHub/ChatGPT-for-Translation/tests/chapter4.pdf"
+# print(parse_pdf_from_server(pdf_path))
+extract_paper_info(pdf_path)
