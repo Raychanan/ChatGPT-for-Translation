@@ -71,4 +71,4 @@ def extract_paper_info(pdf_path):
 
 
 # print(parse_pdf_from_server("Gratitude.pdf"))
-extract_paper_info("Gratitude.pdf")
+# extract_paper_info("Gratitude.pdf")

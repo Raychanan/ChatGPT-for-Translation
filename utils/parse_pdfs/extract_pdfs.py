@@ -158,10 +158,7 @@ def process_pdfs(input_path, parser='scipdf'):
     elif input_path.is_dir():
         pdf_filepaths = list(input_path.glob('*.pdf'))
     else:
-        print(input_path.is_file())
-        print(input_path.suffix)
-        raise ValueError(
-            "Invalid input path. Must be a PDF file or a directory containing PDF files.")
+        raise ValueError("Invalid input path. Must be a PDF file or a directory containing PDF files.")
 
     # Filter out PDFs that have already been extracted
     pdf_filepaths = [pdf_filepath for pdf_filepath in pdf_filepaths if not Path(

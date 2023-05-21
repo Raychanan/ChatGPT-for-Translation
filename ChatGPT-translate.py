@@ -12,7 +12,6 @@ import requests
 import trafilatura
 from tqdm import tqdm
 from utils.bilingual_txt_to_docx import create_bilingual_docx
-from utils.parse_pdfs.extract_pdfs import process_pdfs
 from tenacity import (
     retry,
     stop_after_attempt,
@@ -54,7 +53,7 @@ def translate(key, target_language, text, use_azure=False, api_base="", deployme
         "role":
         "user",
         "content":
-        f"Translate the following text into {target_language} in a way that is faithful to the original text. Retain the original format. Return only the translation and nothing else:\n{text}",
+        f"Translate the following text into {target_language}. Retain the original format. Return only the translation and nothing else:\n{text}",
     }]
     if use_azure:
         completion = openai.ChatCompletion.create(
@@ -152,6 +151,7 @@ def download_html(url):
     response = requests.get(url)
     return response.text
 
+from utils.parse_pdfs.extract_pdfs import process_pdfs
 
 def read_and_preprocess_data(text_filepath_or_url, options):
     if text_filepath_or_url.startswith('http'):
@@ -187,6 +187,47 @@ def read_and_preprocess_data(text_filepath_or_url, options):
     paragraphs = [p.strip() for p in text.split("\n") if p.strip() != ""]
 
     return paragraphs
+
+
+from utils.parse_pdfs.parse_tei_xml import extract_paper_info
+from pathlib import Path
+import trafilatura
+
+def read_and_preprocess_data(text_filepath_or_url, options):
+    if text_filepath_or_url.startswith('http'):
+        # replace "https:/www" with "https://www"
+        text_filepath_or_url = text_filepath_or_url.replace(":/", "://")
+        # download and extract text from URL
+        print("Downloading and extracting text from URL...")
+        downloaded = trafilatura.fetch_url(text_filepath_or_url)
+        print("Downloaded text:")
+        print(downloaded)
+        text = trafilatura.extract(downloaded)
+    elif text_filepath_or_url.endswith('.pdf'):
+        # extract text from PDF file
+        print("Extracting text from PDF file...")
+        extract_paper_info(text_filepath_or_url)
+        # use newly created txt file
+        text_filepath_or_url = f"{Path(text_filepath_or_url).parent}/{Path(text_filepath_or_url).stem}_extracted.txt"
+        with open(text_filepath_or_url, "r", encoding='utf-8') as f:
+            text = f.read()
+    else:
+        with open(text_filepath_or_url, "r", encoding='utf-8') as f:
+            text = f.read()
+            if text_filepath_or_url.endswith('.html'):
+                # extract text from HTML file
+                print("Extracting text from HTML file...")
+                text = trafilatura.extract(text)
+                # write to a txt file ended with "_extracted"
+                with open(
+                        f"{Path(text_filepath_or_url).parent}/{Path(text_filepath_or_url).stem}_extracted.txt",
+                        "w") as f:
+                    f.write(text)
+                    print(f"Extracted text saved to {f.name}.")
+    paragraphs = [p.strip() for p in text.split("\n") if p.strip() != ""]
+
+    return paragraphs
+
 
 
 def parse_arguments():
