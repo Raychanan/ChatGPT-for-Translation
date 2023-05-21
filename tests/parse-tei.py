@@ -32,7 +32,9 @@ def extract_paper_info(file_path):
                 if heading_number:
                     output_file.write(f"{heading_number[0]} {heading[0].text}\n")
                 else:
-                    output_file.write(f"{heading[0].text}\n")
+                    heading_text = heading[0].text
+                    if len(heading_text) >= 2: # ignore one-letter capital style paragraph
+                        output_file.write(f"{heading_text}\n")
             if paragraphs:
                 for para in paragraphs:
                     # Set the text content of the ref elements with type="foot" to an empty string
@@ -44,4 +46,4 @@ def extract_paper_info(file_path):
 
     print(f"Extraction completed, results saved in {output_file_path}")
 
-extract_paper_info("ps-sample.pdf.tei.xml")
+extract_paper_info("Gratitude.pdf.tei.xml")
