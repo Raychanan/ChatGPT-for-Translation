@@ -18,6 +18,7 @@ from tenacity import (
     stop_after_attempt,
     wait_random_exponential,
 )  # for exponential backoff
+from concurrent.futures import as_completed
 
 ALLOWED_FILE_TYPES = [
     ".txt",
@@ -86,20 +87,40 @@ def remove_empty_paragraphs(text):
     return '\n'.join(non_empty_paragraphs)
 
 
+
 def translate_text_file(text_filepath_or_url, options):
     OPENAI_API_KEY = options.openai_key or os.environ.get("OPENAI_API_KEY")
 
     paragraphs = read_and_preprocess_data(text_filepath_or_url, options)
 
+    # Create a list to hold your translated_paragraphs. We'll populate it as futures complete.
+    translated_paragraphs = [None for _ in paragraphs]
+
+    # Submit your translation tasks
+    futures = []
     with ThreadPoolExecutor(max_workers=options.num_threads) as executor:
-        translated_paragraphs = list(
-            tqdm(executor.map(
-                lambda text:
-                translate(OPENAI_API_KEY, options.target_language, text, options.use_azure, options.azure_endpoint, options.azure_deployment_name, options=options), paragraphs),
-                total=len(paragraphs),
-                desc="Translating paragraphs",
-                unit="paragraph"))
-        translated_paragraphs = [p.strip() for p in translated_paragraphs]
+        for idx, text in enumerate(paragraphs):
+            future = executor.submit(
+                translate,
+                OPENAI_API_KEY,
+                options.target_language,
+                text,
+                options.use_azure,
+                options.azure_endpoint,
+                options.azure_deployment_name,
+                options=options
+            )
+            futures.append((idx, future))
+        # Iterate over the futures as they complete.
+        for future in tqdm(as_completed([future for idx, future in futures]), total=len(paragraphs), desc="Translating paragraphs", unit="paragraph"):
+            for idx, f in futures:
+                if f == future:
+                    try:
+                        translated_paragraphs[idx] = future.result().strip()
+                    except Exception as e:
+                        print(f"An error occurred during translation: {e}")
+                        translated_paragraphs[idx] = ""  # or however you want to handle errors
+
 
     translated_text = "\n".join(translated_paragraphs)
 
