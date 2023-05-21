@@ -4,7 +4,8 @@ quick-test.py
 __pycache__/
 *.py[cod]
 *$py.class
-
+*_bilingual.*
+*_translated.*
 # C extensions
 *.so
 
