@@ -151,43 +151,6 @@ def download_html(url):
     response = requests.get(url)
     return response.text
 
-from utils.parse_pdfs.extract_pdfs import process_pdfs
-
-def read_and_preprocess_data(text_filepath_or_url, options):
-    if text_filepath_or_url.startswith('http'):
-        # replace "https:/www" with "https://www"
-        text_filepath_or_url = text_filepath_or_url.replace(":/", "://")
-        # download and extract text from URL
-        print("Downloading and extracting text from URL...")
-        downloaded = trafilatura.fetch_url(text_filepath_or_url)
-        print("Downloaded text:")
-        print(downloaded)
-        text = trafilatura.extract(downloaded)
-    elif text_filepath_or_url.endswith('.pdf'):
-        # extract text from PDF file
-        print("Extracting text from PDF file...")
-        process_pdfs(text_filepath_or_url)
-        # use newly created txt file
-        text_filepath_or_url = f"{Path(text_filepath_or_url).parent}/{Path(text_filepath_or_url).stem}_extracted.txt"
-        with open(text_filepath_or_url, "r", encoding='utf-8') as f:
-            text = f.read()
-    else:
-        with open(text_filepath_or_url, "r", encoding='utf-8') as f:
-            text = f.read()
-            if text_filepath_or_url.endswith('.html'):
-                # extract text from HTML file
-                print("Extracting text from HTML file...")
-                text = trafilatura.extract(text)
-                # write to a txt file ended with "_extracted"
-                with open(
-                        f"{Path(text_filepath_or_url).parent}/{Path(text_filepath_or_url).stem}_extracted.txt",
-                        "w") as f:
-                    f.write(text)
-                    print(f"Extracted text saved to {f.name}.")
-    paragraphs = [p.strip() for p in text.split("\n") if p.strip() != ""]
-
-    return paragraphs
-
 
 from utils.parse_pdfs.parse_tei_xml import extract_paper_info
 from pathlib import Path
