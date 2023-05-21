@@ -1,4 +1,5 @@
 import os
+import regex
 from lxml import etree
 
 
@@ -17,7 +18,7 @@ def extract_paper_info(file_path):
     with open(output_file_path, 'w') as output_file:
         output_file.write("Title(s):\n")
         for title in titles:
-            output_file.write(f"{title.text}\n")
+            output_file.write(f"{title.text}")
 
         output_file.write("\nAbstract:\n")
         for abs in abstract:
@@ -40,10 +41,14 @@ def extract_paper_info(file_path):
                     # Set the text content of the ref elements with type="foot" to an empty string
                     for ref in para.xpath(".//tei:ref[@type='foot']", namespaces=ns):
                         ref.text = ""
-
+                    
                     text = etree.tostring(para, method='text', encoding='unicode')
+
+                    # Remove footnotes in plain text format with a regex
+                    text = regex.sub(r'(?<=\.|")\s\d+(?=\s[A-Z])', '', text)
+
                     output_file.write(f"{text}\n")
 
     print(f"Extraction completed, results saved in {output_file_path}")
 
-extract_paper_info("Gratitude.pdf.tei.xml")
+extract_paper_info("chapter3.pdf.tei.xml")
