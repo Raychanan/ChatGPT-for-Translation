@@ -1,5 +1,4 @@
 import os
-
 from lxml import etree
 
 
@@ -26,13 +25,17 @@ def extract_paper_info(file_path):
             output_file.write(f"{etree.tostring(abs, method='text', encoding='unicode')}\n")
 
         for div in divs:
-            # Modified XPath expression to match any <head> element
+            # Modified XPath expression to match any <head> element and get its number
             heading = div.xpath("tei:head", namespaces=ns)
+            heading_number = div.xpath("tei:head/@n", namespaces=ns)
             paragraphs = div.xpath("tei:p", namespaces=ns)
 
             if heading:
-                output_file.write(f"{heading[0].text}\n")
-            if  paragraphs:
+                if heading_number:
+                    output_file.write(f"{heading_number[0]} {heading[0].text}\n")
+                else:
+                    output_file.write(f"{heading[0].text}\n")
+            if paragraphs:
                 for para in paragraphs:
                     text = etree.tostring(para, method='text', encoding='unicode')
                     output_file.write(f"{text}\n")
