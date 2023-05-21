@@ -1,7 +1,7 @@
 # ChatGPT for Translation | ChatGPT用于翻译
-Use ChatGPT to translate text faithfully to the original. This tool accepts a text file (`.pdf`, `.txt`, `.md`, `.html`, or `.rtf`) or a folder containing text. It will generate both a **direct translation** and a **bilingual** text file. Special optimizations have been made for academic paper PDF parsing and translation.
+Use ChatGPT to translate text files. This tool accepts a text file (`.pdf`, `.txt`, `.md`, `.html`, or `.rtf`) or a folder containing text. It will generate both a **direct translation** and a **bilingual** text file. Special optimizations have been made for academic paper PDF parsing and translation.
 
-使用ChatGPT将文本以忠于原文的方式完成翻译。该工具接受一个文本文件（`.pdf`, `.txt`, `.md`, `.html`或`.rtf`）或者一个包含文本的文件夹。它将生成一个**直接翻译**和一个**双语**文本文件。尤其对于学术论文 PDF 解析和翻译做了特别的优化。
+使用ChatGPT完成文件翻译。该工具接受一个文本文件（`.pdf`, `.txt`, `.md`, `.html`或`.rtf`）或者一个包含文本的文件夹。它将生成一个**直接翻译**和一个**双语**文本文件。尤其对于学术论文 PDF 解析和翻译做了特别的优化。
 
 Use this on Google Colab (recommended). See [here](https://colab.research.google.com/drive/1_715zHeS3VaZaB9ISyo29Zp-KOTsyP8D#scrollTo=hU-8gsBXAyf0)
 
