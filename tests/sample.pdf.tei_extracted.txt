@@ -1,0 +1,11 @@
+Title(s):
+ENERGY STAR® Compliance
+
+Abstract:
+As an ENERGY STAR partner, Apple has determined that standard configurations of this product meet the ENERGY STAR guidelines for energy efficiency. The ENERGY STAR program is a partnership with electronic equipment manufacturers to promote energy-efficient products. Reducing energy consumption of products saves money and helps conserve valuable resources.
+This computer is shipped with power management enabled with the computer set to sleep after 10 minutes of user inactivity. To wake your computer, click the mouse or press any key on the keyboard.
+For more information about ENERGY STAR, visit: www.energystar.gov
+At Apple, we recognize our responsibility to minimize the environmental impacts of our operations and products. For more information, go to: www.apple.com/environment/
+En tant que partenaire ENERGY STAR, Apple a établi que les configurations standard de ce produit sont conformes aux directives d'ENERGY STAR en matière d'efficacité énergétique. Le programme ENERGY STAR est un partenariat avec les fabricants d'équipements électroniques dont l'objectif est de promouvoir des produits écoénergétiques. La réduction de la consommation d'énergie des produits permet de faire des économies et de préserver de précieuses ressources.
+Cet ordinateur est livré avec l'économiseur d'énergie activé de sorte que l'ordinateur se mette en veille après 10 minutes d'inactivité. Pour réactiver votre ordinateur, cliquez sur le bouton de la souris ou du pavé tactile, ou appuyez sur n'importe quelle touche du clavier.
+Pour en savoir plus sur ENERGY STAR, rendez-vous sur : www.energystar.gov Apple et l'environnement Chez Apple, nous reconnaissons notre responsabilité de minimiser les impacts environnementaux de nos activités et de nos produits. Pour en savoir plus, rendez-vous sur : www.apple.com/ca/fr/environment/ © 2019 Apple Inc. Tous droits réservés. Apple et le logo Apple sont des marques de commerce d'Apple Inc., déposées aux États-Unis et dans d'autres pays. ENERGY STAR® est une marque déposée aux États-Unis.

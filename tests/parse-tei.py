@@ -13,7 +13,6 @@ def extract_paper_info(file_path):
     abstract = root.xpath("//tei:profileDesc/tei:abstract/tei:div/tei:p", namespaces=ns)
     divs = root.xpath("//tei:body/tei:div", namespaces=ns)
 
-    # Open the output file
     output_file_path = f"{os.path.splitext(file_path)[0]}_extracted.txt"
     with open(output_file_path, 'w') as output_file:
         output_file.write("Title(s):\n")
@@ -25,7 +24,6 @@ def extract_paper_info(file_path):
             output_file.write(f"{etree.tostring(abs, method='text', encoding='unicode')}\n")
 
         for div in divs:
-            # Modified XPath expression to match any <head> element and get its number
             heading = div.xpath("tei:head", namespaces=ns)
             heading_number = div.xpath("tei:head/@n", namespaces=ns)
             paragraphs = div.xpath("tei:p", namespaces=ns)
@@ -37,6 +35,10 @@ def extract_paper_info(file_path):
                     output_file.write(f"{heading[0].text}\n")
             if paragraphs:
                 for para in paragraphs:
+                    # Set the text content of the ref elements with type="foot" to an empty string
+                    for ref in para.xpath(".//tei:ref[@type='foot']", namespaces=ns):
+                        ref.text = ""
+
                     text = etree.tostring(para, method='text', encoding='unicode')
                     output_file.write(f"{text}\n")
 
