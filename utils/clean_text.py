@@ -8,7 +8,7 @@ def split_paragraphs(paragraphs, max_words=1850):
     for paragraph in paragraphs:
         words = paragraph.split(' ')
         if len(words) > max_words:
-            print("!!!!!!!!!!!!!!")
+            print("Very long pragraphs detected. Splitting it into two seperate paragraphs.")
             sentences = nltk.tokenize.sent_tokenize(paragraph)
             half = len(sentences) // 2
             split_paragraphs.append(' '.join(sentences[:half]))
