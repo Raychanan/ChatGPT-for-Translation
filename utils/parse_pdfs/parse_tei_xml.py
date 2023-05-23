@@ -21,7 +21,7 @@ def parse_pdf_from_server(pdf_path):
 
     if response.status_code == 200:
         xml_source = response.text
-        # save_xml_to_file(pdf_path, xml_source)
+        save_xml_to_file(pdf_path, xml_source)
         return xml_source
     else:
         print(f"Error: {response.status_code}")
@@ -79,6 +79,6 @@ def extract_paper_info(pdf_path):
     print(f"Extraction completed, results saved in {output_file_path}")
 
 
-pdf_path = "/Users/raychan/Downloads/GitHub/ChatGPT-for-Translation/tests/chapter4.pdf"
+pdf_path = "/Users/raychan/Downloads/GitHub/ChatGPT-for-Translation/tests/chapter6.pdf"
 # print(parse_pdf_from_server(pdf_path))
 extract_paper_info(pdf_path)

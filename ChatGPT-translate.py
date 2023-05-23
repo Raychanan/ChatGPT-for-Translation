@@ -12,6 +12,8 @@ import requests
 import trafilatura
 from tqdm import tqdm
 from utils.bilingual_txt_to_docx import create_bilingual_docx
+from utils.clean_text import split_paragraphs
+
 from tenacity import (
     retry,
     stop_after_attempt,
@@ -27,9 +29,6 @@ ALLOWED_FILE_TYPES = [
     ".pdf",
 ]
 AZURE_API_VERSION = "2023-03-15-preview"
-
-
-
 
 @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
 def translate(key, target_language, text, use_azure=False, api_base="", deployment_name="", options=None):
@@ -53,7 +52,7 @@ def translate(key, target_language, text, use_azure=False, api_base="", deployme
         "role":
         "user",
         "content":
-        f"Translate the following text into {target_language}. Retain the original format. Do not translate people's names. Return only the translation and nothing else:\n{text}",
+        f"Translate the following text into {target_language}]. Retain the original format. Do not translate people's names. Return only the translation and nothing else:\n{text}",
     }]
     if use_azure:
         completion = openai.ChatCompletion.create(
@@ -188,7 +187,7 @@ def read_and_preprocess_data(text_filepath_or_url, options):
                     f.write(text)
                     print(f"Extracted text saved to {f.name}.")
     paragraphs = [p.strip() for p in text.split("\n") if p.strip() != ""]
-
+    paragraphs = split_paragraphs(paragraphs)
     return paragraphs
 
 
