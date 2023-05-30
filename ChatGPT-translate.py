@@ -130,7 +130,7 @@ def translate_text_file(text_filepath_or_url, options):
 
     bilingual_text = remove_empty_paragraphs(bilingual_text)
     output_file_bilingual = f"{Path(text_filepath_or_url).parent}/{Path(text_filepath_or_url).stem}_bilingual.txt"
-    with open(output_file_bilingual, "w") as f:
+    with open(output_file_bilingual, "w", encoding="utf-8") as f:
         f.write(bilingual_text)
         print(f"Bilingual text saved to {f.name}.")
     create_bilingual_docx(output_file_bilingual)

@@ -33,7 +33,7 @@ def extract_paper_info(pdf_path):
     divs = root.xpath("//tei:body/tei:div", namespaces=ns)
 
     output_file_path = f"{os.path.splitext(pdf_path)[0]}_extracted.txt"
-    with open(output_file_path, 'w') as output_file:
+    with open(output_file_path, 'w', encoding="utf-8") as output_file:
         output_file.write("Title(s):\n")
         for title in titles:
             output_file.write(f"{title.text}")

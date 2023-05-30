@@ -137,7 +137,7 @@ def write_extracted_pdf_to_file(string, file_path):
     # replace two and more newlines with one newline
     string = re.sub(r'\n{2,}', '\n', string)
     if not new_file_path.exists():
-        with open(new_file_path, "w") as f:
+        with open(new_file_path, "w", encoding="utf-8") as f:
             f.write(string)
     else:
         print(f"Skipping {file_path} as the extracted file already exists.")
