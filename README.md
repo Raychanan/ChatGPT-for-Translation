@@ -1,11 +1,11 @@
 # ChatGPT for Translation | ChatGPT用于翻译
-Use ChatGPT to complete document translations. This tool accepts a text file (`.pdf`, `.txt`, `.md`, `.html`, or `.rtf`) or a folder containing text files. It will generate both a **direct translation** and a **bilingual** text file. Special optimization has been done for parsing PDFs.
+Use ChatGPT to complete document translations. This tool accepts a text file (`.pdf`, `.txt`, `.md`, `.html`, or `.rtf`) or a folder containing text files. It will generate both a direct translation and a bilingual text file. Special optimization has been done for parsing PDFs.
 
-使用ChatGPT完成文件翻译。该工具接受一个文本文件（`.pdf`, `.txt`, `.md`, `.html`或`.rtf`）或者一个包含文本的文件夹。它将生成一个**直接翻译**和一个**双语**文本文件。对于 PDF 解析做了优化。
+使用ChatGPT完成文件翻译。该工具接受一个文本文件（`.pdf`, `.txt`, `.md`, `.html`或`.rtf`）或者一个包含文本的文件夹。它将生成一个直接翻译和一个双语文本文件。对于 PDF 解析做了优化。
 
-Use this on Google Colab (recommended). See [here](https://colab.research.google.com/drive/1_715zHeS3VaZaB9ISyo29Zp-KOTsyP8D#scrollTo=hU-8gsBXAyf0)
+Use this on Google Colab (**recommended**). See [here](https://colab.research.google.com/drive/1_715zHeS3VaZaB9ISyo29Zp-KOTsyP8D#scrollTo=hU-8gsBXAyf0)
 
-Google Colab上使用这个工具(推荐)。见[这里](https://colab.research.google.com/drive/1_715zHeS3VaZaB9ISyo29Zp-KOTsyP8D#scrollTo=hU-8gsBXAyf0)
+Google Colab上使用这个工具(**推荐**)。见[这里](https://colab.research.google.com/drive/1_715zHeS3VaZaB9ISyo29Zp-KOTsyP8D#scrollTo=hU-8gsBXAyf0)
 
 ## Simple Example | 简单例子
 
