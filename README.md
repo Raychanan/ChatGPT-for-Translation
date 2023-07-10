@@ -43,6 +43,10 @@ python ChatGPT-translate.py --input_path=input.txt --model=gpt-4 --openai_key=pa
 ## Prerequisites | 要求
 OpenAI API key (https://beta.openai.com/signup/) or Azure
 
+You need to link a payment method in the OpenAI API, otherwise you'll face extremely stringent API rate limits. 
+
+OpenAI API 里面要绑定支付方式，否则会有极其严苛的API速率限制.
+
 ## Arguments | 可用参数
 ```
 --num_threads: The number of threads to use for translation (default: 10).
