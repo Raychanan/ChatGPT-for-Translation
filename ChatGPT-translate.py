@@ -118,7 +118,7 @@ def translate_text_file(text_filepath_or_url, options):
                         translated_paragraphs[idx] = future.result().strip()
                     except Exception as e:
                         print(f"An error occurred during translation: {e}")
-                        translated_paragraphs[idx] = ""  # or however you want to handle errors
+                        translated_paragraphs[idx] = "" 
 
 
     translated_text = "\n".join(translated_paragraphs)

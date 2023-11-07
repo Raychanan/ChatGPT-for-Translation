@@ -1,17 +1,13 @@
 from docx import Document
 from docx.shared import Pt
 from docx.enum.style import WD_STYLE_TYPE
-from langdetect import detect
 from docx.oxml.ns import qn
-
+import regex
 
 def is_chinese(text):
-    try:
-        detected_lang = detect(text)
-        return detected_lang != 'en'
-    except:
-        return False
-
+    # This will return True if any Chinese characters are found in the text,
+    # otherwise, it will return False.
+    return regex.search(r'\p{Han}', text) is not None
 
 def remove_empty_paragraphs(text):
 
