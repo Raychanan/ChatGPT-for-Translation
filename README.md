@@ -51,6 +51,7 @@ OpenAI API 里面要绑定支付方式，否则会有极其严苛的API速率限
 ```
 --num_threads: The number of threads to use for translation (default: 10).
 --only_process_this_file_extension. For example, set only_process_this_file_extension="txt".
+--not_to_translate_references. By default, not to translate references.
 ```
 
 ## Acknowledge 
